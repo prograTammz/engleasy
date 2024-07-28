@@ -7,6 +7,14 @@ interface BotChatBubbleProps {
   isLoading: boolean;
 }
 
-export const ChatBubble: React.FC<BotChatBubbleProps> = ({ text }) => {
+interface UserChatBubbleProps {
+  text: string;
+}
+
+export const BotChatBubble: React.FC<BotChatBubbleProps> = ({ text }) => {
+  return <div>{text}</div>;
+};
+
+export const UserChatBubble: React.FC<UserChatBubbleProps> = ({ text }) => {
   return <div>{text}</div>;
 };
