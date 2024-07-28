@@ -12,6 +12,7 @@ import { Cross2Icon, PaperPlaneIcon, PlayIcon } from "@radix-ui/react-icons";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import { BotChatBubble, UserChatBubble } from "./bubbles/ChatBubble";
 
 export const ChatWindow: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
@@ -45,7 +46,13 @@ export const ChatWindow: React.FC = () => {
         </DialogHeader>
         {/* Body */}
         <ScrollArea className="h-[400px] w-full">
-          <div className="grid gap-4 py-4">this is the body</div>
+          <BotChatBubble
+            text="Hi Jane, Amazing how mosey is similificng state complicance!"
+            botAvatar="https://api.dicebear.com/9.x/micah/svg?seed=Boo"
+            botName="Ava"
+            isLoading={false}
+          />
+          <UserChatBubble text="Hi, thanks for connecting" />
         </ScrollArea>
 
         {/* This is the footer */}
