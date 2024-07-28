@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,17 +6,40 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Cross2Icon } from "@radix-ui/react-icons";
 
 export const ChatWindow: React.FC = () => {
+  const [open, setOpen] = useState<boolean>(false);
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary"> Open</Button>
       </DialogTrigger>
       <DialogContent>
-        {/* Header */}
-        <DialogHeader>This is the header</DialogHeader>
+        <DialogHeader>
+          <div className="flex justify-end w-full">
+            <Button variant="ghost" size="icon">
+              <Cross2Icon className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-2">
+              <Avatar>
+                <AvatarImage
+                  src="https://api.dicebear.com/9.x/micah/svg"
+                  alt="@Ava"
+                />
+                <AvatarFallback>Ava</AvatarFallback>
+              </Avatar>
+              <h2 className="font-bold">Hey 👋 I'm Ava</h2>
+              <p className="text-gray-500">
+                Ask me anything or pick a place to start
+              </p>
+            </div>
+          </div>
+        </DialogHeader>
         {/* Body */}
         <div className="grid gap-4 py-4">this is the body</div>
         {/* This is the footer */}
