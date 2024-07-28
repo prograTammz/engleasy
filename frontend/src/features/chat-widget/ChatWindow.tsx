@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { BotChatBubble, UserChatBubble } from "./bubbles/ChatBubble";
+import { PhaseBubble } from "./bubbles/PhaseBubble";
 
 export const ChatWindow: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
@@ -53,6 +54,7 @@ export const ChatWindow: React.FC = () => {
             isLoading={false}
           />
           <UserChatBubble text="Hi, thanks for connecting" />
+          <PhaseBubble phaseName="Listening" phaseNumber={1} />
         </ScrollArea>
 
         {/* This is the footer */}
