@@ -1,9 +1,12 @@
 import React from "react";
 
-interface ChatBubbleProps {
+interface BotChatBubbleProps {
+  botAvatar: string;
+  botName: string;
   text: string;
+  isLoading: boolean;
 }
 
-export const ChatBubble: React.FC<ChatBubbleProps> = ({ text }) => {
+export const ChatBubble: React.FC<BotChatBubbleProps> = ({ text }) => {
   return <div>{text}</div>;
 };
