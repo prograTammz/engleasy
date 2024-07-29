@@ -1,7 +1,9 @@
+# app/database.py
 import motor.motor_asyncio
 from bson.objectid import ObjectId
 from datetime import datetime
 import os
+from models import SenderType
 
 MONGO_URL = os.getenv("MONGO_URL")
 
@@ -14,9 +16,11 @@ def chat_helper(chat) -> dict:
     return {
         "id": str(chat["_id"]),
         "text": chat["text"],
-        "timestamp": chat["timestamp"]
+        "timestamp": chat["timestamp"],
+        "sender": chat["sender"]
     }
 
+# CRUD operations
 async def retrieve_chats():
     chats = []
     async for chat in chat_collection.find():
