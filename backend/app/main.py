@@ -3,7 +3,8 @@ from fastapi import FastAPI, HTTPException
 from models import ChatMessage
 from database import (
     add_chat,
-    retrieve_chats
+    retrieve_chats,
+    retrieve_chat
 )
 from datetime import datetime
 
@@ -19,6 +20,13 @@ async def create_chat(chat: ChatMessage):
     chat.timestamp = datetime.utcnow()
     new_chat = await add_chat(chat.dict())
     return new_chat
+
+@app.get("/chats/{id}", response_model=ChatMessage)
+async def get_chat(id: str):
+    chat = await retrieve_chat(id)
+    if chat:
+        return chat
+    raise HTTPException(status_code=404, detail=f"Chat with ID {id} not found")
 
 
 if __name__ == "__main__":
