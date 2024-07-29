@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from models import ChatMessage
 from database import (
     add_chat,
+    delete_chat,
     retrieve_chats,
     retrieve_chat,
     update_chat
@@ -38,6 +39,12 @@ async def update_chat_data(id: str, chat: ChatMessage):
         return f"Chat with ID {id} updated successfully"
     raise HTTPException(status_code=404, detail=f"Chat with ID {id} not found")
 
+@app.delete("/chats/{id}")
+async def delete_chat_data(id: str):
+    deleted = await delete_chat(id)
+    if deleted:
+        return f"Chat with ID {id} deleted successfully"
+    raise HTTPException(status_code=404, detail=f"Chat with ID {id} not found")
 
 if __name__ == "__main__":
     import uvicorn
