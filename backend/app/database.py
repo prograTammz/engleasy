@@ -33,3 +33,17 @@ async def retrieve_chat(id: str) -> dict:
     chat = await chat_collection.find_one({"_id": ObjectId(id)})
     if chat:
         return chat_helper(chat)
+
+async def update_chat(id: str, data: dict):
+    if len(data) < 1:
+        return False
+    chat = await chat_collection.find_one({"_id": ObjectId(id)})
+    if chat:
+        if "timestamp" not in data:
+            data["timestamp"] = datetime.utcnow()
+        updated_chat = await chat_collection.update_one(
+            {"_id": ObjectId(id)}, {"$set": data}
+        )
+        if updated_chat:
+            return True
+    return False
