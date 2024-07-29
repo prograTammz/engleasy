@@ -4,7 +4,8 @@ from models import ChatMessage
 from database import (
     add_chat,
     retrieve_chats,
-    retrieve_chat
+    retrieve_chat,
+    update_chat
 )
 from datetime import datetime
 
@@ -26,6 +27,15 @@ async def get_chat(id: str):
     chat = await retrieve_chat(id)
     if chat:
         return chat
+    raise HTTPException(status_code=404, detail=f"Chat with ID {id} not found")
+
+@app.put("/chats/{id}")
+async def update_chat_data(id: str, chat: ChatMessage):
+    chat_data = chat.dict(exclude_unset=True)
+    chat_data["timestamp"] = datetime.utcnow()
+    updated = await update_chat(id, chat_data)
+    if updated:
+        return f"Chat with ID {id} updated successfully"
     raise HTTPException(status_code=404, detail=f"Chat with ID {id} not found")
 
 
