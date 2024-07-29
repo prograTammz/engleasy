@@ -10,6 +10,16 @@ database = client.chatbot
 
 chat_collection = database.get_collection("chats")
 
+async def retrieve_chats():
+    chats = []
+    async for chat in chat_collection.find():
+        chats.append({
+        "id": str(chat["_id"]),
+        "text": chat["text"],
+        "timestamp": chat["timestamp"]
+    })
+    return chats
+
 async def add_chat(chat_data: dict) -> dict:
     chat_data["timestamp"] = datetime.utcnow()
     chat = await chat_collection.insert_one(chat_data)
