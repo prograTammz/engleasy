@@ -9,6 +9,7 @@ from database import (
     update_chat
 )
 from datetime import datetime
+from openai_integration import get_openai_response
 
 app = FastAPI()
 
@@ -20,8 +21,21 @@ async def get_chats():
 @app.post("/chats", response_model=ChatMessage)
 async def create_chat(chat: ChatMessage):
     chat_data = chat.dict(exclude_unset=True)
-    new_chat = await add_chat(chat_data)
-    return new_chat
+    chat_data['sender'] = "user"
+    user_chat = await add_chat(chat_data)
+
+    # Get OpenAI response
+    bot_response_text = await get_openai_response(chat.text)
+
+    # Save OpenAI response to the database
+    bot_chat = ChatMessage(
+        text=bot_response_text,
+        sender="bot",
+    ).dict(exclude_unset=True)
+
+    bot_chat_saved = await add_chat(bot_chat)
+
+    return bot_chat_saved
 
 @app.get("/chats/{id}", response_model=ChatMessage)
 async def get_chat(id: str):
