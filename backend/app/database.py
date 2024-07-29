@@ -3,8 +3,6 @@ import motor.motor_asyncio
 from bson.objectid import ObjectId
 from datetime import datetime
 import os
-from models import SenderType
-
 MONGO_URL = os.getenv("MONGO_URL")
 
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_URL)
@@ -17,6 +15,7 @@ def chat_helper(chat) -> dict:
         "id": str(chat["_id"]),
         "text": chat["text"],
         "timestamp": chat["timestamp"],
+        "modified": chat["modified"],
         "sender": chat["sender"]
     }
 
@@ -43,8 +42,7 @@ async def update_chat(id: str, data: dict):
         return False
     chat = await chat_collection.find_one({"_id": ObjectId(id)})
     if chat:
-        if "timestamp" not in data:
-            data["timestamp"] = datetime.utcnow()
+        data["modified"] = datetime.utcnow()
         updated_chat = await chat_collection.update_one(
             {"_id": ObjectId(id)}, {"$set": data}
         )
