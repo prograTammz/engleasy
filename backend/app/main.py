@@ -1,6 +1,7 @@
 # main.py
 from fastapi import FastAPI, HTTPException
-from models import ChatMessage
+from fastapi.responses import StreamingResponse
+from models import (ChatMessage, TextToAudioRequest)
 from database import (
     add_chat,
     delete_chat,
@@ -8,10 +9,14 @@ from database import (
     retrieve_chat,
     update_chat
 )
-from datetime import datetime
-from openai_integration import get_openai_response
-
+from openai_integration import (get_openai_response,text_to_speech)
+from pathlib import Path
+import os
 app = FastAPI()
+
+def iterfile(file_path: str):
+    with open(file_path, mode="rb") as file_like:
+        yield from file_like
 
 @app.get("/chats", response_model=list[ChatMessage])
 async def get_chats():
@@ -58,6 +63,20 @@ async def delete_chat_data(id: str):
     if deleted:
         return f"Chat with ID {id} deleted successfully"
     raise HTTPException(status_code=404, detail=f"Chat with ID {id} not found")
+
+@app.post("/text-to-audio")
+async def text_to_audio_endpoint(request: TextToAudioRequest):
+    speech_file_path = Path(__file__).parent / "speech.mp3"
+
+    audio_file = await text_to_speech(request.text)
+
+    if not os.path.exists(speech_file_path):
+            raise HTTPException(status_code=404, detail="File not found")
+
+    if audio_file:
+        return StreamingResponse(iterfile(speech_file_path), media_type="audio/mpeg")
+    raise HTTPException(status_code=404, detail=f"Couldn't generate an audio file")
+
 
 if __name__ == "__main__":
     import uvicorn
