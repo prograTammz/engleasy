@@ -1,16 +1,15 @@
 # app/models.py
 from pydantic import BaseModel
-from typing import Optional
+from typing import (Optional, List)
 from datetime import datetime
-from enum import Enum
 
-class SenderType(str, Enum):
-    user = "user"
-    bot = "bot"
 
 class ChatMessage(BaseModel):
     id: Optional[str] = None
     text: str
-    timestamp: Optional[datetime] = None
+    created: Optional[datetime] = None
     modified: Optional[datetime] = None
-    sender: SenderType
+    sender: str = "user"
+
+class ChatResponse(BaseModel):
+    chats: List[ChatMessage]
