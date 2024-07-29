@@ -14,9 +14,9 @@ def chat_helper(chat) -> dict:
     return {
         "id": str(chat["_id"]),
         "text": chat["text"],
-        "timestamp": chat["timestamp"],
-        "modified": chat["modified"],
-        "sender": chat["sender"]
+        "created": chat.get("created"),
+        "modified": chat.get("modified"),
+        "sender": chat.get("sender")
     }
 
 # CRUD operations
@@ -27,7 +27,8 @@ async def retrieve_chats():
     return chats
 
 async def add_chat(chat_data: dict) -> dict:
-    chat_data["timestamp"] = datetime.utcnow()
+    chat_data["created"] = datetime.utcnow()
+    chat_data["modified"] = datetime.utcnow()
     chat = await chat_collection.insert_one(chat_data)
     new_chat = await chat_collection.find_one({"_id": chat.inserted_id})
     return chat_helper(new_chat)
