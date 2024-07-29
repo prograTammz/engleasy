@@ -11,3 +11,6 @@ class ChatMessage(BaseModel):
     modified: Optional[datetime] = None
     is_modified: Optional[bool] = False
     sender: str = "user"
+
+class TextToAudioRequest(BaseModel):
+    text: str
