@@ -47,3 +47,9 @@ async def update_chat(id: str, data: dict):
         if updated_chat:
             return True
     return False
+
+async def delete_chat(id: str):
+    chat = await chat_collection.find_one({"_id": ObjectId(id)})
+    if chat:
+        await chat_collection.delete_one({"_id": ObjectId(id)})
+        return True
