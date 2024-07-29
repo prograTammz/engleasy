@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+pymongo
+motor
+python-jose
+openai
+passlib
