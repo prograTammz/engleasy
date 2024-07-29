@@ -19,8 +19,8 @@ async def get_chats():
 
 @app.post("/chats", response_model=ChatMessage)
 async def create_chat(chat: ChatMessage):
-    chat.timestamp = datetime.utcnow()
-    new_chat = await add_chat(chat.dict())
+    chat_data = chat.dict(exclude_unset=True)
+    new_chat = await add_chat(chat_data)
     return new_chat
 
 @app.get("/chats/{id}", response_model=ChatMessage)
@@ -33,7 +33,6 @@ async def get_chat(id: str):
 @app.put("/chats/{id}")
 async def update_chat_data(id: str, chat: ChatMessage):
     chat_data = chat.dict(exclude_unset=True)
-    chat_data["timestamp"] = datetime.utcnow()
     updated = await update_chat(id, chat_data)
     if updated:
         return f"Chat with ID {id} updated successfully"
