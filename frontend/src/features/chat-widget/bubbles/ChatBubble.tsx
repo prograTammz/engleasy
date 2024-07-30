@@ -23,7 +23,9 @@ export const BotChatBubble: React.FC<BotChatBubbleProps> = ({
         <AvatarImage src={botAvatar} alt={botName} />
         <AvatarFallback>{botName}</AvatarFallback>
       </Avatar>
-      <div className="bg-gray-200 p-3 rounded-3xl rounded-tl-none">{text}</div>
+      <div className="bg-gray-200 dark:bg-gray-700 p-3 rounded-3xl rounded-tl-none">
+        {text}
+      </div>
     </div>
   );
 };
@@ -31,7 +33,7 @@ export const BotChatBubble: React.FC<BotChatBubbleProps> = ({
 export const UserChatBubble: React.FC<UserChatBubbleProps> = ({ text }) => {
   return (
     <div className="flex justify-end gap-2 mb-4">
-      <div className="bg-purple-600 p-3 rounded-3xl rounded-tr-none text-white">
+      <div className="bg-purple-600 dark:bg-purple-200 p-3 rounded-3xl rounded-tr-none text-white dark:text-black">
         {text}
       </div>
     </div>
