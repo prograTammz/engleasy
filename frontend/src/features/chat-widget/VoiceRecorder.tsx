@@ -25,6 +25,8 @@ export const VoiceRecorder: React.FC = () => {
     //Create a blob after recording is finished from the audio chunks
     mediaRecorder.current.onstop = () => {
       setAudioBlob(new Blob(audioChunks.current));
+
+      audioChunks.current = [];
     };
     //Starts recording
     mediaRecorder.current.start();
