@@ -10,6 +10,9 @@ interface RecordButtonProps {
 export const VoiceRecorder: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  //temporary
+  const [transcription, setTranscription] = useState<string | null>(null);
+
   //These values SHOULD NOT cause a re-render, useref is a must
   const mediaRecorder = useRef<MediaRecorder | null>(null);
   const audioChunks = useRef<Blob[]>([]);
@@ -25,7 +28,7 @@ export const VoiceRecorder: React.FC = () => {
     //Create a blob after recording is finished from the audio chunks
     mediaRecorder.current.onstop = () => {
       setAudioBlob(new Blob(audioChunks.current));
-
+      sendAudioToServer(audioBlob!);
       audioChunks.current = [];
     };
     //Starts recording
@@ -44,6 +47,27 @@ export const VoiceRecorder: React.FC = () => {
       stopRecording();
     } else {
       startRecording();
+    }
+  };
+
+  //temporary
+  const sendAudioToServer = async (audioBlob: Blob) => {
+    const formData = new FormData();
+    formData.append("file", audioBlob, "audio.webm");
+
+    try {
+      const response = await fetch("http://localhost:8000/upload-audio/", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setTranscription(data.transcription);
+      } else {
+        console.error("Error:", data);
+      }
+    } catch (error) {
+      console.error("Error:", error);
     }
   };
 
@@ -75,6 +99,12 @@ export const VoiceRecorder: React.FC = () => {
         isRecording={isRecording}
         handleRecording={handleRecording}
       />
+      {transcription && (
+        <div className="mt-4 p-2 bg-gray-200 rounded">
+          <h3 className="text-lg font-bold">Transcription:</h3>
+          <p>{transcription}</p>
+        </div>
+      )}
     </div>
   );
 };
