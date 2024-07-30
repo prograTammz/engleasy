@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 interface RecordButtonProps {
   isRecording: boolean;
@@ -8,12 +8,24 @@ interface RecordButtonProps {
 
 export const VoiceRecorder: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorder = useRef<MediaRecorder | null>(null);
 
-  const startRecording = () => {
+  const startRecording = async () => {
+    //Asks for permission to get the user data
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder.current = new MediaRecorder(stream);
+    //Push new audio chunks when it's recorded
+    mediaRecorder.current.ondataavailable = () => {};
+    //Create a blob after recording is finished from the audio chunks
+    mediaRecorder.current.onstop = () => {};
+    //Starts recording
+    mediaRecorder.current.start();
     setIsRecording(true);
   };
 
   const stopRecording = () => {
+    //Stops the recording
+    mediaRecorder.current?.stop();
     setIsRecording(false);
   };
 
