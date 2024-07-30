@@ -43,7 +43,9 @@ const RecordButton: React.FC<RecordButtonProps> = ({
     <Button
       onClick={() => handleRecording()}
       size="lg"
-      className="animate-pulse rounded-full border-red-500 border-4 p-1 bg-transparent h-12 w-12"
+      className={`transition-all border-4 p-1 ${
+        isRecording && "animate-pulse border-0 p-0"
+      } rounded-full border-red-500  bg-transparent h-12 w-12`}
     >
       <div className="bg-red-500 w-full h-full rounded-full"></div>
     </Button>
