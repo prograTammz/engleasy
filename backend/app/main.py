@@ -80,20 +80,18 @@ async def text_to_audio_endpoint(request: TextToAudioRequest):
 
 @app.post("/upload-audio/")
 async def upload_audio(file: UploadFile = File(...)):
-    try:
+
+        audio_data = await file.read()
+        # Transcribe the audio file using OpenAI
+        transcription = speech_to_text(audio_data)
 
         # Upload the file to S3
-        fileUrl = upload_audio_s3(file)
-
-        # Transcribe the audio file using OpenAI
-        transcription = speech_to_text(file)
+        fileUrl = await upload_audio_s3(file, audio_data)
 
         return {
-            "transcription": transcription['text'],
+            "transcription": transcription,
             "s3_url": fileUrl
         }
-    except Exception as e:
-        return {"error": str(e)}
 
 if __name__ == "__main__":
     import uvicorn
