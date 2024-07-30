@@ -26,7 +26,9 @@ async def text_to_speech(text: str):
     return True
 
 
-async def speech_to_text(audio_file) -> str:
+async def speech_to_text(file) -> str:
+    audio_file = await file.read()
+
     transcript = client.audio.transcriptions.create(
         model="whisper-2",
         file=audio_file,
