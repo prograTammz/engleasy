@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { AudioVisualizer, LiveAudioVisualizer } from "react-audio-visualize";
 import React, { useRef, useState } from "react";
 
 interface RecordButtonProps {
@@ -45,7 +46,29 @@ export const VoiceRecorder: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="bg-muted rounded-lg p-4 flex flex-col justify-center items-center">
+      <div className="h-16">
+        {isRecording && mediaRecorder.current && (
+          <LiveAudioVisualizer
+            mediaRecorder={mediaRecorder.current}
+            width={320}
+            height={64}
+            barWidth={2}
+            gap={2}
+            barColor={"rgb(239, 68, 68)"}
+          />
+        )}
+        {!isRecording && audioBlob && (
+          <AudioVisualizer
+            blob={audioBlob}
+            width={320}
+            height={64}
+            barWidth={2}
+            gap={2}
+            barColor={"rgb(239, 68, 68)"}
+          />
+        )}
+      </div>
       <RecordButton
         isRecording={isRecording}
         handleRecording={handleRecording}
