@@ -8,16 +8,23 @@ interface RecordButtonProps {
 
 export const VoiceRecorder: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  //These values SHOULD NOT cause a re-render, useref is a must
   const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const audioChunks = useRef<Blob[]>([]);
 
   const startRecording = async () => {
     //Asks for permission to get the user data
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorder.current = new MediaRecorder(stream);
     //Push new audio chunks when it's recorded
-    mediaRecorder.current.ondataavailable = () => {};
+    mediaRecorder.current.ondataavailable = (event) => {
+      audioChunks.current.push(event.data);
+    };
     //Create a blob after recording is finished from the audio chunks
-    mediaRecorder.current.onstop = () => {};
+    mediaRecorder.current.onstop = () => {
+      setAudioBlob(new Blob(audioChunks.current));
+    };
     //Starts recording
     mediaRecorder.current.start();
     setIsRecording(true);
