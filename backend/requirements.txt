@@ -5,4 +5,5 @@ pymongo
 motor
 python-jose
 openai
-passlib
+boto3
+uuid
