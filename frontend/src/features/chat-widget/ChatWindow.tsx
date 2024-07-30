@@ -16,7 +16,7 @@ import { BotChatBubble, UserChatBubble } from "./bubbles/ChatBubble";
 import { PhaseBubble } from "./bubbles/PhaseBubble";
 import { Tabs } from "@/components/ui/tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
-import AudioRecorder from "./AudioRecorder";
+import { VoiceRecorder } from "./VoiceRecorder";
 
 export const ChatWindow: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
@@ -102,7 +102,9 @@ export const ChatWindow: React.FC = () => {
                 </div>
               </div>
             </TabsContent>
-            <TabsContent value="audio"></TabsContent>
+            <TabsContent value="audio">
+              <VoiceRecorder />
+            </TabsContent>
           </Tabs>
         </DialogFooter>
       </DialogContent>
