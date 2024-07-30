@@ -1,5 +1,5 @@
 # main.py
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
 from models import (ChatMessage, TextToAudioRequest)
 from database import (
@@ -9,7 +9,8 @@ from database import (
     retrieve_chat,
     update_chat
 )
-from openai_integration import (get_openai_response,text_to_speech)
+from bucket_storage import upload_audio_s3
+from openai_integration import (get_openai_response,text_to_speech, speech_to_text)
 from pathlib import Path
 import os
 app = FastAPI()
@@ -77,6 +78,22 @@ async def text_to_audio_endpoint(request: TextToAudioRequest):
         return StreamingResponse(iterfile(speech_file_path), media_type="audio/mpeg")
     raise HTTPException(status_code=404, detail=f"Couldn't generate an audio file")
 
+@app.post("/upload-audio/")
+async def upload_audio(file: UploadFile = File(...)):
+    try:
+
+        # Upload the file to S3
+        fileUrl = upload_audio_s3(file)
+
+        # Transcribe the audio file using OpenAI
+        transcription = speech_to_text(file)
+
+        return {
+            "transcription": transcription['text'],
+            "s3_url": fileUrl
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 if __name__ == "__main__":
     import uvicorn
