@@ -14,6 +14,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { BotChatBubble, UserChatBubble } from "./bubbles/ChatBubble";
 import { PhaseBubble } from "./bubbles/PhaseBubble";
+import { Tabs } from "@/components/ui/tabs";
+import { TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
+import AudioRecorder from "./AudioRecorder";
 
 export const ChatWindow: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
@@ -25,7 +28,7 @@ export const ChatWindow: React.FC = () => {
       <DialogContent>
         <DialogHeader>
           <div className="flex justify-end w-full">
-            <Button variant="ghost" size="icon">
+            <Button variant="outline" size="icon" className="p-0">
               <Cross2Icon className="h-4 w-4" />
             </Button>
           </div>
@@ -60,28 +63,47 @@ export const ChatWindow: React.FC = () => {
         {/* This is the footer */}
         <Separator />
         <DialogFooter>
-          <div className="flex flex-col w-full gap-4">
-            <div className="flex w-full">
-              <Avatar>
-                <AvatarImage
-                  src="https://api.dicebear.com/9.x/micah/svg?seed=Oliver"
-                  alt="@Ava"
-                />
-                <AvatarFallback>Ava</AvatarFallback>
-              </Avatar>
-              <Textarea className="w-full" />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" size="icon" className="p-0">
-                <PlayIcon />
-                <span className="sr-only">Record a voice message</span>
-              </Button>
-              <Button variant="secondary" size="icon" className="p-0">
-                <PaperPlaneIcon />
-                <span className="sr-only">Send Message</span>
-              </Button>
-            </div>
-          </div>
+          <Tabs defaultValue="text" className="w-full">
+            <TabsList className="items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground grid w-full grid-cols-2 mb-4">
+              <TabsTrigger
+                value="text"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow data-[state=inactive]:bg-muted"
+              >
+                Text
+              </TabsTrigger>
+              <TabsTrigger
+                value="audio"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow data-[state=inactive]:bg-muted"
+              >
+                Audio
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="text">
+              <div className="flex flex-col w-full gap-4">
+                <div className="flex w-full">
+                  <Avatar>
+                    <AvatarImage
+                      src="https://api.dicebear.com/9.x/micah/svg?seed=Oliver"
+                      alt="@Ava"
+                    />
+                    <AvatarFallback>Ava</AvatarFallback>
+                  </Avatar>
+                  <Textarea className="w-full" />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="icon" className="p-0">
+                    <PlayIcon />
+                    <span className="sr-only">Record a voice message</span>
+                  </Button>
+                  <Button variant="secondary" size="icon" className="p-0">
+                    <PaperPlaneIcon />
+                    <span className="sr-only">Send Message</span>
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+            <TabsContent value="audio"></TabsContent>
+          </Tabs>
         </DialogFooter>
       </DialogContent>
     </Dialog>
