@@ -25,3 +25,14 @@ async def text_to_speech(text: str):
 
     return True
 
+
+async def speech_to_text(audio_file) -> str:
+    transcript = client.audio.transcriptions.create(
+        model="whisper-2",
+        file=audio_file,
+        language="en",
+        response_format='text'
+
+    )
+
+    return transcript
