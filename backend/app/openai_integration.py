@@ -1,5 +1,8 @@
 from openai import OpenAI
 from pathlib import Path
+from io import BytesIO, BufferedReader
+import uuid
+import os
 
 client = OpenAI()
 
@@ -26,15 +29,18 @@ async def text_to_speech(text: str):
     return True
 
 
-async def speech_to_text(file) -> str:
-    audio_file = await file.read()
+def speech_to_text(audio_data) -> str:
+    # Read file content
+    buffer = BytesIO(audio_data)
+    buffer.name = "file.mp3"
 
     transcript = client.audio.transcriptions.create(
-        model="whisper-2",
-        file=audio_file,
+        model="whisper-1",
+        file=buffer,
         language="en",
-        response_format='text'
-
+        response_format="text"
     )
+
+    buffer.close()
 
     return transcript
