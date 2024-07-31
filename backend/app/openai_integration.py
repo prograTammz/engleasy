@@ -13,7 +13,6 @@ async def get_openai_response(user_message: str) -> str:
             {"role": "user", "content": user_message}
         ]
     )
-    print(response.choices[0].message.content)
     return response.choices[0].message.content
 
 async def text_to_speech(text: str):
