@@ -1,5 +1,6 @@
 import json
 import random
+from typing import Optional
 
 from app.utils.redis_client import redis_client
 from app.models.chat import ChatHistory
@@ -16,3 +17,10 @@ def start_new_chat(user_id: str):
     redis_client.set(f"chat_{user_id}", chat_history.json_dumb())
     redis_client.set(f"questionnaire_{user_id}", json.dumps(questionnaire))
     return questionnaire
+
+# Checks the redis if the chat history exust then returns it after parsing it
+def get_chat_history(user_id: str) -> Optional[ChatHistory]:
+    chat_data = redis_client.get(f"chat_{user_id}")
+    if chat_data:
+        return ChatHistory.model_validate_json(chat_data)
+    return None
