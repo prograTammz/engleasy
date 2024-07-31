@@ -1,6 +1,6 @@
 import json
 import random
-import datetime
+from datetime import datetime,timezone
 from uuid import uuid4
 from typing import Optional
 
@@ -47,7 +47,7 @@ def add_message(user_id: str, text: str, sender: str = "user") -> str:
         chat_history.messages.append(ChatMessage(
             id=message_id,
             text=text,
-            created=datetime.utcnow(),
+            created=datetime.now(timezone.utc),
             sender=sender
         ))
         save_chat_history(chat_history)
@@ -61,7 +61,7 @@ def edit_message(user_id: str, message_id: str, new_text: str) -> bool:
         for message in chat_history.messages:
             if message.id == message_id:
                 message.text = new_text
-                message.modified = datetime.utcnow()
+                message.modified = datetime.now(timezone.utc)
                 message.is_modified = True
                 save_chat_history(chat_history)
                 return True
