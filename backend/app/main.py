@@ -1,6 +1,6 @@
 # main.py
 from fastapi import FastAPI, HTTPException, UploadFile, File
-from app.routers import auth, assessment
+from app.routers import auth, assessment, scores
 # To be cleaned VVVVVVVV
 # from fastapi.responses import StreamingResponse
 # from models import (ChatMessage, TextToAudioRequest)
@@ -21,6 +21,7 @@ app = FastAPI()
 
 app.include_router(auth.router, prefix="/auth")
 app.include_router(assessment.router, prefix="/assessment")
+app.include_router(scores.router, prefix="/scores")
 
 
 # To be cleaned VVVVVVVV
