@@ -57,7 +57,7 @@ def generate_questionnaire():
 # ----------------------------
 
 # Prompt for generating criteria for scoring the questionnaire
-def generate_score_sheet(questionnaire_json: str) -> str:
+def generate_score_sheet(questionnaire_json: str, user_id:str ) -> str:
 
     marking_criteria = """
     You are a scoring assistant for language proficiency tests. Score each answer based on the following criteria:
@@ -125,7 +125,7 @@ def generate_score_sheet(questionnaire_json: str) -> str:
 
     prompt = f"{marking_criteria}\n\n{questionnaire_json}"
 
-    return json.loads(create_gpt_completion(prompt))
+    return get_score_sheet_object(create_gpt_completion(prompt), user_id)
 
 # Takes the score sheet json after it gets generated and parsed from chatGPT with user_id
 def get_score_sheet_object(score_sheet_json: str, user_id: str) -> str:
