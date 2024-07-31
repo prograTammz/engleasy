@@ -45,6 +45,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         )
     user_id: str = payload.get("sub")
     user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    user['id'] = user_id
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
