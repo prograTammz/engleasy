@@ -3,8 +3,53 @@ import datetime
 
 from app.services.openai import create_gpt_completion
 from app.models.score import (EnglishScoreSheet, WritingScores, SpeakingScores, ReadingScores, ListeningScores)
+from app.models.assessment import (Question, Questionnaire)
+
+# ----------------------------
+# Questionnaire Definitions
+# ----------------------------
+
+# Added question generation prompt that makes call to chatgpt
 def generate_questionnaire():
-    pass
+
+    prompt = """
+    Generate a unique English proficiency test questionnaire. Include four types of questions: reading, writing, listening, and speaking. Each type should have one question. The format should be a JSON array with the following fields:
+    - type: one of 'reading', 'writing', 'listening', 'speaking'
+    - question: the question text
+    - content_type: one of 'text' or 'audio'
+    - audio_content (optional): the transcript of the audio content (for listening type)
+    - audio_url (optional): the URL of the audio content (for listening type)
+
+    Example:
+    [
+        {
+            "type": "reading",
+            "question": "What is the main idea of the passage?",
+            "content_type": "text"
+        },
+        {
+            "type": "writing",
+            "question": "Write an essay on climate change.",
+            "content_type": "text"
+        },
+        {
+            "type": "listening",
+            "question": "What did the speaker say about renewable energy?",
+            "content_type": "audio",
+            "audio_content": "Renewable energy is crucial for sustainable development.",
+            "audio_url": "http://example.com/audio/renewable_energy.mp3"
+        },
+        {
+            "type": "speaking",
+            "question": "Describe your favorite hobby.",
+            "content_type": "text"
+        }
+    ]
+    """
+
+    questionnaire_data = json.loads(create_gpt_completion(prompt))
+    return Questionnaire(tests=[Question(**test) for test in questionnaire_data])
+
 
 
 # ----------------------------
