@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, Literal
+from pydantic import BaseModel, Field
+from typing import Literal
 
 """
 The scores are based on EnglishScore system by the British Council
