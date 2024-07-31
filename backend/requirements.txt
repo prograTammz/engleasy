@@ -5,3 +5,6 @@ motor
 openai
 boto3
 uuid
+redis
+pyjwt
+passlib
