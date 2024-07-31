@@ -21,7 +21,7 @@ class WritingScores(BaseModel):
     coherence_and_cohesion: int = Field(..., ge=0, le=20)
     lexical_resource: int = Field(..., ge=0, le=20)
     grammatical_range_and_accuracy: int = Field(..., ge=0, le=20)
-    total: int = Field(..., ge=0, le=80)
+    total: float = Field(..., ge=0, le=80)
 
 class SpeakingScores(BaseModel):
     """
