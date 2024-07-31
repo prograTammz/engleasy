@@ -1,7 +1,8 @@
-from datetime import datetime,timezone, timedelta
-from passlib.context import CryptContext
 import jwt
 import os
+from datetime import datetime,timezone, timedelta
+from passlib.context import CryptContext
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
 #Constants for Password hashing and token generation
 SECRET_KEY = os.getenv("SECRET_KEY", "your_secret_key")
@@ -27,7 +28,7 @@ def decode_access_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload
-    except jwt.ExpiredSignatureError:
+    except ExpiredSignatureError:
         return None
-    except jwt.JWTError:
+    except InvalidTokenError:
         return None
