@@ -39,3 +39,10 @@ class SpeakingScores(BaseModel):
     lexical_resource: int = Field(..., ge=0, le=20)
     grammatical_range_and_accuracy: int = Field(..., ge=0, le=20)
     total: int = Field(..., ge=0, le=80)
+
+class ReadingScores(BaseModel):
+    understanding_main_ideas: int = Field(..., ge=0, le=20)
+    understanding_details: int = Field(..., ge=0, le=20)
+    inference: int = Field(..., ge=0, le=20)
+    lexical_resource: int = Field(..., ge=0, le=20)
+    total: int = Field(..., ge=0, le=80)
