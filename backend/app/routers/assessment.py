@@ -1,15 +1,16 @@
-import json
+from bson import ObjectId
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from app.routers.auth import get_current_user
 from app.models.user import User
 from app.models.assessment import Questionnaire
-from app.models.score import EnglishScoreSheet
 from app.services.assessment import generate_questionnaire, generate_score_sheet
 from app.utils.redis_client import redis_client
-
+from app.services.scores import save_score
+from app.utils.mongo_client import users_collection
 
 router = APIRouter()
+
 
 @router.get("/questionnaire")
 async def get_questionnaire(current_user: User = Depends(get_current_user)):
@@ -25,11 +26,12 @@ async def get_questionnaire(current_user: User = Depends(get_current_user)):
 @router.post("/submit")
 async def submit_questionnaire(questionnaire: Questionnaire, current_user: User = Depends(get_current_user)):
     user_id = current_user.id
-    # questionnaire_json = redis_client.get(f"questionnaire_{user_id}")
-    # if not questionnaire_json:
-    #     raise HTTPException(status_code=404, detail="Questionnaire not found")
-    score = await generate_score_sheet(questionnaire.model_dump_json(), user_id)
+    score_sheet = await generate_score_sheet(questionnaire.model_dump_json(), user_id)
+    score_id = await save_score(score_sheet)
     redis_client.delete(f"questionnaire_{user_id}")
-    return {"score": score}
+    await users_collection.update_one({"_id": ObjectId(user_id)}, {"$set": {"on_progress_test": False}})
+    return {"score_id": score_id, "score": score_sheet}
+
+
 
 
