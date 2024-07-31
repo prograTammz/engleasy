@@ -137,7 +137,6 @@ async def generate_score_sheet(questionnaire_json: str, user_id:str ) -> English
 
 # Takes the score sheet json after it gets generated and parsed from chatGPT with user_id
 def get_score_sheet_object(score_sheet_json: dict, user_id: str) -> EnglishScoreSheet:
-    print(user_id)
     return EnglishScoreSheet(
         user_id=user_id,  # Replace with actual user ID
         test_date=str(datetime.now(timezone.utc)),
