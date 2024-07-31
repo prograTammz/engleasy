@@ -41,6 +41,16 @@ class SpeakingScores(BaseModel):
     total: int = Field(..., ge=0, le=80)
 
 class ReadingScores(BaseModel):
+    """
+        Understanding Main Ideas:
+           - Ability to grasp the main points of a text.
+        Understanding Details:
+            - Ability to comprehend specific details in the text.
+        Inference:
+            - Ability to make logical inferences based on the text.
+        Lexical Resource:
+            - Ability to understand and use vocabulary.
+    """
     understanding_main_ideas: int = Field(..., ge=0, le=20)
     understanding_details: int = Field(..., ge=0, le=20)
     inference: int = Field(..., ge=0, le=20)
@@ -48,12 +58,18 @@ class ReadingScores(BaseModel):
     total: int = Field(..., ge=0, le=80)
 
 class ListeningScores(BaseModel):
+    """
+        TODO: Add the Listening Criteria
+    """
     understanding_main_ideas: int = Field(..., ge=0, le=20)
     understanding_details: int = Field(..., ge=0, le=20)
     inference: int = Field(..., ge=0, le=20)
     lexical_resource: int = Field(..., ge=0, le=20)
     total: int = Field(..., ge=0, le=80)
 
+"""
+    ScoreSheet after assessing it, should be presenting by graph
+"""
 class EnglishScoreSheet(BaseModel):
     user_id: str = Field(...)
     test_date: str = Field(...)
