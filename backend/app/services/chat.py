@@ -53,3 +53,16 @@ def add_message(user_id: str, text: str, sender: str = "user") -> str:
         save_chat_history(chat_history)
         return message_id
     return None
+
+# Retrieves the chat history then searches for the message with it's id and edits it.
+def edit_message(user_id: str, message_id: str, new_text: str) -> bool:
+    chat_history = get_chat_history(user_id)
+    if chat_history:
+        for message in chat_history.messages:
+            if message.id == message_id:
+                message.text = new_text
+                message.modified = datetime.utcnow()
+                message.is_modified = True
+                save_chat_history(chat_history)
+                return True
+    return False
