@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Literal
 
 """
 The scores are based on EnglishScore system by the British Council
@@ -53,3 +53,13 @@ class ListeningScores(BaseModel):
     inference: int = Field(..., ge=0, le=20)
     lexical_resource: int = Field(..., ge=0, le=20)
     total: int = Field(..., ge=0, le=80)
+
+class EnglishScoreSheet(BaseModel):
+    user_id: str = Field(...)
+    test_date: str = Field(...)
+    writing: WritingScores = Field(...)
+    speaking: SpeakingScores = Field(...)
+    reading: ReadingScores = Field(...)
+    listening: ListeningScores = Field(...)
+    overall_score: int = Field(..., ge=0, le=320)
+    cefr_level: Literal['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] = Field(...)
