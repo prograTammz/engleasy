@@ -1,5 +1,5 @@
 import json
-import datetime
+from datetime import datetime,timezone
 
 from app.services.openai import create_gpt_completion
 from app.models.score import (EnglishScoreSheet, WritingScores, SpeakingScores, ReadingScores, ListeningScores)
@@ -10,10 +10,10 @@ from app.models.assessment import (Question, Questionnaire)
 # ----------------------------
 
 # Added question generation prompt that makes call to chatgpt
-def generate_questionnaire():
+async def generate_questionnaire() -> Questionnaire:
 
     prompt = """
-    Generate a unique English proficiency test questionnaire. Include four types of questions: reading, writing, listening, and speaking. Each type should have one question. The format should be a JSON array with the following fields:
+    Generate a unique English proficiency test questionnaire. Include four types of questions: reading, writing, listening, and speaking. Each type should have two questions. The format should be a JSON array with the following fields:
     - type: one of 'reading', 'writing', 'listening', 'speaking'
     - question: the question text
     - content_type: one of 'text' or 'audio'
@@ -45,9 +45,12 @@ def generate_questionnaire():
             "content_type": "text"
         }
     ]
+    and don't add the word json at the beginning
     """
 
-    questionnaire_data = json.loads(create_gpt_completion(prompt))
+    result = await create_gpt_completion(prompt)
+
+    questionnaire_data = json.loads(result)
     return Questionnaire(tests=[Question(**test) for test in questionnaire_data])
 
 
@@ -57,7 +60,7 @@ def generate_questionnaire():
 # ----------------------------
 
 # Prompt for generating criteria for scoring the questionnaire
-def generate_score_sheet(questionnaire_json: str, user_id:str ) -> str:
+async def generate_score_sheet(questionnaire_json: str, user_id:str ) -> EnglishScoreSheet:
 
     marking_criteria = """
     You are a scoring assistant for language proficiency tests. Score each answer based on the following criteria:
@@ -121,17 +124,23 @@ def generate_score_sheet(questionnaire_json: str, user_id:str ) -> str:
         "overall_score": score,
         "cefr_level": "A1" | "A2" | "B1" | "B2" | "C1" | "C2"
     }
+    and don't add the word "json" at the beginning and don't add comments the result need to be pure JSON
     """
 
     prompt = f"{marking_criteria}\n\n{questionnaire_json}"
 
-    return get_score_sheet_object(create_gpt_completion(prompt), user_id)
+    response = await create_gpt_completion(prompt)
+
+    score_data = json.loads(response)
+
+    return get_score_sheet_object(score_data, user_id)
 
 # Takes the score sheet json after it gets generated and parsed from chatGPT with user_id
-def get_score_sheet_object(score_sheet_json: str, user_id: str) -> str:
+def get_score_sheet_object(score_sheet_json: dict, user_id: str) -> EnglishScoreSheet:
+    print(user_id)
     return EnglishScoreSheet(
         user_id=user_id,  # Replace with actual user ID
-        test_date=datetime.utcnow(),
+        test_date=str(datetime.now(timezone.utc)),
         writing=WritingScores(
             task_achievement=score_sheet_json['writing']['task_achievement'],
             coherence_and_cohesion=score_sheet_json['writing']['coherence_and_cohesion'],
