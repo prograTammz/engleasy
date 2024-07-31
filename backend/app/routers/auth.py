@@ -3,14 +3,14 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.models.user import User, UserCreate, UserToken
 from app.utils.mongo_client import users_collection
 from app.services.auth import get_password_hash, verify_password, create_access_token
-from datetime import timedelta
-
+from uuid import uuid4
 router = APIRouter()
 
 @router.post("/register", response_model=User)
 async def register(user: UserCreate):
     user_dict = user.model_dump()
     user_dict['hashed_password'] = get_password_hash(user.password)
+    user_dict['id'] = str(uuid4())
     del user_dict['password']
     new_user = User(**user_dict)
     result = await users_collection.insert_one(new_user.model_dump())
@@ -26,8 +26,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=30)
     access_token = create_access_token(
-        data={"sub": str(user["_id"])}, expires_delta=access_token_expires
+        data={"sub": str(user["_id"])}
     )
     return {"access_token": access_token, "token_type": "bearer"}
