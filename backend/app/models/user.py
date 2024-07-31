@@ -11,3 +11,7 @@ class User(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
+
+class UserToken(BaseModel):
+    access_token: str
+    token_type: str
