@@ -24,3 +24,7 @@ def get_chat_history(user_id: str) -> Optional[ChatHistory]:
     if chat_data:
         return ChatHistory.model_validate_json(chat_data)
     return None
+
+# Saves the chathistory as a snapshot
+def save_chat_history(chat_history: ChatHistory):
+    redis_client.set(f"chat_{chat_history.user_id}", chat_history.model_dump_json())
