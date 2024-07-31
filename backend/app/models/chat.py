@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Literal
+from typing import Optional, Literal, List
 from datetime import datetime
 
 
@@ -11,3 +11,7 @@ class ChatMessage(BaseModel):
     is_modified: Optional[bool] = False
     sender: str = Literal('user', 'bot')
 
+class ChatHistory(BaseModel):
+    user_id: str
+    messages: List[ChatMessage]
+    current_question_index: int
