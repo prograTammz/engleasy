@@ -66,3 +66,13 @@ def edit_message(user_id: str, message_id: str, new_text: str) -> bool:
                 save_chat_history(chat_history)
                 return True
     return False
+
+# Retrieves the chat history and then remove the message from history by filtering it
+# and save the snapshot.
+def delete_message(user_id: str, message_id: str) -> bool:
+    chat_history = get_chat_history(user_id)
+    if chat_history:
+        chat_history.messages = [msg for msg in chat_history.messages if msg.id != message_id]
+        save_chat_history(chat_history)
+        return True
+    return False
