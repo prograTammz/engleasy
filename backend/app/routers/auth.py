@@ -4,6 +4,7 @@ from app.models.user import User, UserCreate, UserToken
 from app.utils.mongo_client import users_collection
 from app.services.auth import get_password_hash, verify_password, create_access_token, decode_access_token
 from uuid import uuid4
+from bson import ObjectId
 
 router = APIRouter()
 
@@ -39,15 +40,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail="Could not validate credentials: Wrong Token",
             headers={"WWW-Authenticate": "Bearer"},
         )
     user_id: str = payload.get("sub")
-    user = await users_collection.find_one({"_id": user_id})
+    user = await users_collection.find_one({"_id": ObjectId(user_id)})
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials",
+            detail="Could not validate credentials: User not found",
             headers={"WWW-Authenticate": "Bearer"},
         )
     return User(**user)
