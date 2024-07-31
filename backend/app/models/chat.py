@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import (Optional)
+from typing import Optional, Literal
 from datetime import datetime
 
 
@@ -9,4 +9,5 @@ class ChatMessage(BaseModel):
     created: Optional[datetime] = None
     modified: Optional[datetime] = None
     is_modified: Optional[bool] = False
-    sender: str = "user"
+    sender: str = Literal('user', 'bot')
+
