@@ -6,7 +6,7 @@ class User(BaseModel):
     email: EmailStr
     hashed_password: str
     previous_tests: Optional[List[str]] = []
-    on_progress_test: Optional[str] = None
+    on_progress_test: Optional[bool] = None
 
 class UserCreate(BaseModel):
     email: EmailStr
