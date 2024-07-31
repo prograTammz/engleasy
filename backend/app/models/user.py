@@ -5,7 +5,7 @@ class User(BaseModel):
     id: Optional[str]
     email: EmailStr
     hashed_password: str
-    previous_tests: List[str] = []
+    previous_tests: Optional[List[str]] = []
     on_progress_test: Optional[str] = None
 
 class UserCreate(BaseModel):
