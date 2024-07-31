@@ -1,7 +1,7 @@
 # app/database.py
 import motor.motor_asyncio
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime,timezone
 import os
 MONGO_URL = os.getenv("MONGO_URL")
 
@@ -27,8 +27,8 @@ async def retrieve_chats():
     return chats
 
 async def add_chat(chat_data: dict) -> dict:
-    chat_data["created"] = datetime.utcnow()
-    chat_data["modified"] = datetime.utcnow()
+    chat_data["created"] = datetime.now(timezone.utc)
+    chat_data["modified"] = datetime.now(timezone.utc)
     chat = await chat_collection.insert_one(chat_data)
     new_chat = await chat_collection.find_one({"_id": chat.inserted_id})
     return chat_helper(new_chat)
@@ -43,7 +43,7 @@ async def update_chat(id: str, data: dict):
         return False
     chat = await chat_collection.find_one({"_id": ObjectId(id)})
     if chat:
-        data["modified"] = datetime.utcnow()
+        data["modified"] = datetime.now(timezone.utc)
         updated_chat = await chat_collection.update_one(
             {"_id": ObjectId(id)}, {"$set": data}
         )
