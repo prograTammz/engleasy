@@ -1,5 +1,7 @@
 # main.py
 from fastapi import FastAPI, HTTPException, UploadFile, File
+from app.routers import auth
+# To be cleaned VVVVVVVV
 from fastapi.responses import StreamingResponse
 from models import (ChatMessage, TextToAudioRequest)
 from database import (
@@ -13,8 +15,14 @@ from bucket_storage import upload_audio_s3
 from openai_integration import (get_openai_response,text_to_speech, speech_to_text)
 from pathlib import Path
 import os
+# To be cleaned ^^^^^^^^^^
+
 app = FastAPI()
 
+app.include_router(auth.router, prefix="/auth")
+
+
+# To be cleaned VVVVVVVV
 def iterfile(file_path: str):
     with open(file_path, mode="rb") as file_like:
         yield from file_like
