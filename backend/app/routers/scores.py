@@ -17,14 +17,14 @@ async def get_scores(current_user: User = Depends(get_current_user)):
 
 @router.get("/{score_id}")
 async def get_score(score_id: str, current_user: User = Depends(get_current_user)):
-    score = get_score_by_id(score_id)
+    score = await get_score_by_id(score_id)
     if not score:
         raise HTTPException(status_code=404, detail="Score not found")
     return score
 
 @router.delete("/{score_id}")
 async def delete_score(score_id: str, current_user: User = Depends(get_current_user)):
-    result = delete_score_by_id(score_id)
+    result = await delete_score_by_id(score_id)
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Score not found")
     return {"message": "Score deleted successfully"}
