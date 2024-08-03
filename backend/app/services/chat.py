@@ -82,7 +82,10 @@ class ChatService:
     # Goes through all the questions of the Questionaire and return the
     # unanswered question for the user to answer
     def __get_next_question(self) -> Question:
-        pass
+        for question in self.questionaire.questions:
+            if question.answer is None:
+                return question
+        return None
 
     # Creates a ChatMessage Object & updates the history
     def __create_message(self, msg_text:str, sender: Literal['bot', 'user']) -> ChatMessage:
