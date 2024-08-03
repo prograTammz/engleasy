@@ -52,10 +52,13 @@ class ChatService:
         return None
 
     #  Saves the chatHistory to Redis
-    def save_chat_history(self) -> ChatHistory:
-        chat_data = self.chat_history.model_dump_json()
-        redis_client.set(f"chat_{self.user_id}", chat_data)
-        pass
+    def save_chat_history(self) -> bool:
+        try:
+            chat_data = self.chat_history.model_dump_json()
+            redis_client.set(f"chat_{self.user_id}", chat_data)
+            return True
+        except:
+            return False
 
     # Edits the message (Only User Message)
     # Since user messages are usually answers, it will search for releated
@@ -99,7 +102,7 @@ class ChatService:
             self.chat_history.messages.append(message)
             self.save_chat_history()
             return message
-        except Exception:
+        except:
             return None
 
 
@@ -108,5 +111,18 @@ class ChatService:
         pass
 
     # Will search in questionaire similar text in anser and replace it.
-    async def __set_existing_answer(self, msg_text: str) -> bool:
-        pass
+    def __set_existing_answer(self, msg_text: str, new_text: str) -> bool:
+        for question in self.questionaire.questions:
+            if question.answer == msg_text:
+                question.answer = new_text
+                return self.__save_questionaire()
+        return False
+
+    def __save_questionaire(self) -> bool:
+        try:
+            questionaire_data = self.questionaire.model_dump_json()
+            redis_client.set(f"questionnaire_{self.user_id}", questionaire_data)
+            return True
+        except:
+            return False
+
