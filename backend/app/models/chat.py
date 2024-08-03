@@ -13,5 +13,4 @@ class ChatMessage(BaseModel):
     sender: Literal['user', 'bot'] = 'bot'
 
 class ChatHistory(BaseModel):
-    user_id: str
     messages: List[ChatMessage]
