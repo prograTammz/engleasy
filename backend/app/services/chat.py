@@ -3,10 +3,12 @@ from typing import Any, Literal, cast, MutableMapping
 from uuid import uuid4
 from datetime import datetime, timezone
 # Models
-# Services
 from app.models.assessment import Questionnaire, Question
 from app.models.chat import ChatMessage, ChatHistory
 from app.models.score import EnglishScoreSheet
+# Services
+from app.services.scores import save_score
+from app.services.assessment import generate_score_sheet
 # Utilities
 from app.utils import redis_client
 
@@ -35,7 +37,14 @@ class ChatService:
     # Comepletes the assessment by scoring and saving the score
     # and deleting the questionaire & chat history
     async def complete_assessment(self) -> EnglishScoreSheet:
-        pass
+        try:
+            score_sheet = await generate_score_sheet(self.questionaire)
+            save_score(score_sheet)
+            redis_client.delete(f"questionnaire_{self.user_id}")
+            redis_client.delete(f"chat_history_{self.user_id}")
+            return score_sheet
+        except:
+            return None
 
     # Retrieves the ChatHistory from redis if exit, it not it creates new one
     def get_chat_history(self) -> ChatHistory:
