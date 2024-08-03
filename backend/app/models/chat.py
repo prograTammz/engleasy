@@ -9,7 +9,7 @@ class ChatMessage(BaseModel):
     created: Optional[datetime] = None
     modified: Optional[datetime] = None
     is_modified: Optional[bool] = False
-    sender: str = Literal('user', 'bot')
+    sender: Literal['user', 'bot'] = 'bot'
 
 class ChatHistory(BaseModel):
     user_id: str
