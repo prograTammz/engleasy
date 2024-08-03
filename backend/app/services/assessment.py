@@ -22,31 +22,33 @@ async def generate_questionnaire() -> Questionnaire:
     - audio_url (for listening type): the URL of the audio content
 
     Example:
-    [
-        {
-            "type": "reading",
-            "question": "What is the main idea of the passage?",
-            "content_type": "text",
-            "text_content": "The passage content goes here..."
-        },
-        {
-            "type": "writing",
-            "question": "Write an essay on climate change.",
-            "content_type": "text"
-        },
-        {
-            "type": "listening",
-            "question": "What did the speaker say about renewable energy?",
-            "content_type": "audio",
-            "audio_content": "Renewable energy is crucial for sustainable development.",
-            "audio_url": "http://example.com/audio/renewable_energy.mp3"
-        },
-        {
-            "type": "speaking",
-            "question": "Describe your favorite hobby.",
-            "content_type": "text"
-        }
-    ]
+    {
+        questions:[
+            {
+                "type": "reading",
+                "question": "What is the main idea of the passage?",
+                "content_type": "text",
+                "text_content": "The passage content goes here..."
+            },
+            {
+                "type": "writing",
+                "question": "Write an essay on climate change.",
+                "content_type": "text"
+            },
+            {
+                "type": "listening",
+                "question": "What did the speaker say about renewable energy?",
+                "content_type": "audio",
+                "audio_content": "Renewable energy is crucial for sustainable development.",
+                "audio_url": "http://example.com/audio/renewable_energy.mp3"
+            },
+            {
+                "type": "speaking",
+                "question": "Describe your favorite hobby.",
+                "content_type": "text"
+            }
+        ]
+    }
     """
 
     result = await create_gpt_completion(prompt)
