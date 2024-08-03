@@ -1,29 +1,83 @@
 # Packages
-from fastapi import APIRouter, WebSocket, Depends
-from typing import List, Dict
-#Routing
-from app.routers.auth import get_current_user
+from fastapi import Message
+from typing import Literal
 # Models
-from app.models.chat import ChatMessage
-from app.models.user import User
 # Services
-
+from app.models.assessment import Questionnaire, Question
+from app.models.chat import ChatMessage, ChatHistory
+from app.models.score import EnglishScoreSheet
 # Utilities
 
-router = APIRouter()
+class ChatService:
+    # Takes the user_id after openning connection and authenticating
+    # the user, it starts the assesment session
+    async def __init__(self, user_id):
+        self.user_id = user_id
+        self.questionaire = await self.__start_assessment()
+        self.chat_history = await self.get_chat_history()
+        pass
 
-@router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    pass
+    # Processes Every message user sends
+    async def handle_message(self, msg: Message) -> ChatMessage:
+        pass
 
-@router.get("/messages", response_model=List[ChatMessage])
-async def get_chat_history(current_user: User = Depends(get_current_user)):
-    pass
+    # Saves the answer to questionaire
+    async def handle_text_message(self, msg: str) -> ChatMessage:
+        pass
 
-@router.put("/messages/{message_id}", response_model=ChatMessage)
-async def edit_message(message_id: str, text: str, current_user: User = Depends(get_current_user)):
-    pass
+    # Will convert the audio to transcript to save answer as text while
+    #  Scoring the prouncation with separate service
+    async def handle_blob_message(self, msg: bytes) -> ChatMessage:
+        pass
 
-@router.delete("/messages/{message_id}")
-async def delete_message(message_id: str, current_user: User = Depends(get_current_user)):
-    pass
+    # Comepletes the assessment by scoring and saving the score
+    # and deleting the questionaire & chat history
+    async def complete_assessment(self) -> EnglishScoreSheet:
+        pass
+
+    # Retrieves the ChatHistory from redis if exit, it not it creates new one
+    async def get_chat_history(self) -> ChatHistory:
+        pass
+
+    #  Saves the chatHistory to Redis
+    async def save_chat_history(self) -> ChatHistory:
+        pass
+
+    # Edits the message (Only User Message)
+    # Since user messages are usually answers, it will search for releated
+    # message to the question and modifies it.
+    async def edit_message(self, msg_id:str) -> bool:
+        pass
+
+    # Deletes the message (Only User Message)
+    # Since user messages are usually answers, it will search for releated
+    # message to the question and deletes it, the question will be repeated.
+    async def delete_message(self, msg_id: str) -> bool:
+        pass
+
+    # Check the message type if it's text or blob to process the message
+    # accordingly
+    async def __check_message_type(self, msg: Message) -> Literal['text', 'blob']:
+        pass
+
+    # Starts assessment session either by creating a questionnaire through
+    # ChatGPT or retrieving existing one from redis
+    async def __start_assessment(self) -> Questionnaire:
+        pass
+
+    # Goes through all the questions of the Questionaire and return the
+    # unanswered question for the user to answer
+    def __get_next_question(self) -> Question:
+        pass
+
+    # Creates a ChatMessage Object
+    def __create_message(self, msg_text:str, sender: Literal['bot', 'user']) -> ChatMessage:
+        pass
+
+    # Searches for a ChatMessage through the ChatHistory
+    def __retrieve_message(self, msg_id: str) -> ChatMessage:
+        pass
+
+    # Will search in questionaire similar text in anser and replace it.
+    async def __set_existing_answer(self, msg_text: str) -> bool:
+        pass
