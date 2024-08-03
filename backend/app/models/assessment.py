@@ -6,8 +6,9 @@ class Question(BaseModel):
     question: str
     answer: Optional[str] = None
     content_type: Literal['text', 'audio']
+    text_content: Optional[str] = None
     audio_content: Optional[str] = None
     audio_url: Optional[str] = None
 
 class Questionnaire(BaseModel):
-    tests: List[Question]
+    questions: List[Question]
