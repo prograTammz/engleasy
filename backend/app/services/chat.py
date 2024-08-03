@@ -72,7 +72,16 @@ class ChatService:
     # Edits the message (Only User Message)
     # Since user messages are usually answers, it will search for releated
     # message to the question and modifies it.
-    async def edit_message(self, msg_id:str) -> bool:
+    async def edit_message(self, msg_id:str, msg_text:str) -> bool:
+        message = self.__retrieve_message(msg_id)
+        # Update message
+        message.text = msg_text
+        message.is_modified = True
+        message.modified = datetime.now(timezone.utc)
+        # Save new History
+        self.__set_existing_message(msg_id, message)
+        # Update Questionnaire
+        self.__set_existing_answer(msg_text)
         pass
 
     # Deletes the message (Only User Message)
@@ -136,7 +145,24 @@ class ChatService:
 
     # Searches for a ChatMessage through the ChatHistory
     def __retrieve_message(self, msg_id: str) -> ChatMessage:
-        pass
+        messages = self.chat_history.messages
+        for msg in messages:
+            if msg.id == msg_id:
+                return msg
+        return None
+
+    def __set_existing_message(self, msg_id: str, new_msg: ChatMessage, delete: bool = False) -> bool:
+        try:
+            messages = self.chat_history.messages
+            for msg in messages:
+                if msg.id == msg_id:
+                    if delete:
+                        del msg
+                    else:
+                        msg = new_msg
+            return self.save_chat_history()
+        except:
+            return False
 
     # Will search in questionaire similar text in anser and replace it.
     def __set_existing_answer(self, msg_text: str, new_text: str) -> bool:
