@@ -30,7 +30,7 @@ class ChatService:
         if not next_question:
             return [self.__create_message('The assessment is already over','bot')]
 
-        chat_history = self.get_chat_history()
+        chat_history = self.__get_chat_history()
         if not chat_history.messages:
             welcome_message = self.__create_message(
             """
@@ -47,11 +47,11 @@ class ChatService:
 
                 Your answer for writting question must be text message!
             """, 'bot')
-            question_one = self.handle_question_response()
+            question_one = self.__handle_question_response()
             return [welcome_message,*question_one]
         else:
             message = self.__create_message("Resuming the Assessment", 'bot')
-            return [message, *self.handle_question_response()]
+            return [message, *self.__handle_question_response()]
 
     # Processes Every message user sends
     async def handle_message(self, msg:MutableMapping[str, Any]) -> List[ChatMessage]:
@@ -62,33 +62,59 @@ class ChatService:
             msg_type = self.__check_message_type(msg)
             if msg_type == 'text':
                 msg = self.__cast_message_text(msg)
-                return self.handle_text_message(msg)
+                return self.__handle_text_message(msg)
             else:
                 msg = self.__cast_message_blob(msg)
-                return self.handle_blob_message(msg)
+                return self.__handle_blob_message(msg)
 
         # If it's Done
         else:
-            score_sheet = await self.complete_assessment()
+            score_sheet = await self.__complete_assessment()
             bot_response = f"Assessment complete. Your score: {score_sheet.overall_score}, Your Level: {score_sheet.cefr_level}"
 
             return [self.__create_message(bot_response, 'bot'), self.__create_message(score_sheet.model_dump_json(), 'bot', 'sheet')]
 
+    # Edits the message (Only User Message)
+    # Since user messages are usually answers, it will search for releated
+    # message to the question and modifies it.
+    def edit_message(self, msg_id:str, msg_text:str) -> bool:
+        message = self.__retrieve_message(msg_id)
+        # Update message
+        message.content = msg_text
+        message.is_modified = True
+        message.modified = datetime.now(timezone.utc)
+        # Save new History
+        self.__set_existing_message(msg_id, message)
+        # Update Questionnaire
+        self.__set_existing_answer(msg_text)
+
+
+    # Deletes the message (Only User Message)
+    # Since user messages are usually answers, it will search for releated
+    # message to the question and deletes it, the question will be repeated.
+    def delete_message(self, msg_id: str) -> bool:
+        message = self.__retrieve_message(msg_id)
+        # Deletes the message from History
+        self.__set_existing_message(msg_id, None, True)
+        # Emptys the existing answer in Questionnaire
+        self.__set_existing_answer(message.content, None)
+
+
     # Saves the answer to questionnaire
-    def handle_text_message(self, msg: str) -> List[ChatMessage]:
+    def __handle_text_message(self, msg: str) -> List[ChatMessage]:
         # Answer the current question
         self.__set_new_answer(msg)
         # Create User Message
         self.__create_message(msg, 'user')
         # Respond with New Question
-        return self.handle_question_response()
+        return self.__handle_question_response()
 
     # Will convert the audio to transcript to save answer as text while
     #  Scoring the prouncation with separate service
-    def handle_blob_message(self, msg: bytes) -> List[ChatMessage]:
+    def __handle_blob_message(self, msg: bytes) -> List[ChatMessage]:
         return [self.__create_message('Not ready yet', 'bot')]
 
-    def handle_question_response(self) -> List[ChatMessage]:
+    def __handle_question_response(self) -> List[ChatMessage]:
         next_question = self.__get_next_question()
         responses = []
         responses.append(self.__create_message(next_question.question, 'bot'))
@@ -110,7 +136,7 @@ class ChatService:
 
     # Comepletes the assessment by scoring and saving the score
     # and deleting the questionnaire & chat history
-    async def complete_assessment(self) -> EnglishScoreSheet:
+    async def __complete_assessment(self) -> EnglishScoreSheet:
         try:
             score_sheet = await generate_score_sheet(self.questionnaire, self.user_id)
             save_score(score_sheet)
@@ -121,7 +147,7 @@ class ChatService:
             return None
 
     # Retrieves the ChatHistory from redis if exit, it not it creates new one
-    def get_chat_history(self) -> ChatHistory:
+    def __get_chat_history(self) -> ChatHistory:
         chat_data = redis_client.get(f"chat_history_{self.user_id}")
         chat_history = None
         if chat_data:
@@ -130,12 +156,12 @@ class ChatService:
             chat_history = ChatHistory(
                 messages=[]
             )
-            self.save_chat_history(chat_history)
+            self.__save_chat_history(chat_history)
 
         return chat_history
 
     #  Saves the chatHistory to Redis
-    def save_chat_history(self, chat_history: ChatHistory) -> bool:
+    def __save_chat_history(self, chat_history: ChatHistory) -> bool:
         try:
             chat_data = chat_history.model_dump_json()
             redis_client.set(f"chat_history_{self.user_id}", chat_data)
@@ -143,31 +169,7 @@ class ChatService:
         except:
             return False
 
-    # Edits the message (Only User Message)
-    # Since user messages are usually answers, it will search for releated
-    # message to the question and modifies it.
-    def edit_message(self, msg_id:str, msg_text:str) -> bool:
-        message = self.__retrieve_message(msg_id)
-        # Update message
-        message.content = msg_text
-        message.is_modified = True
-        message.modified = datetime.now(timezone.utc)
-        # Save new History
-        self.__set_existing_message(msg_id, message)
-        # Update Questionnaire
-        self.__set_existing_answer(msg_text)
-        pass
 
-    # Deletes the message (Only User Message)
-    # Since user messages are usually answers, it will search for releated
-    # message to the question and deletes it, the question will be repeated.
-    def delete_message(self, msg_id: str) -> bool:
-        message = self.__retrieve_message(msg_id)
-        # Deletes the message from History
-        self.__set_existing_message(msg_id, None, True)
-        # Emptys the existing answer in Questionnaire
-        self.__set_existing_answer(message.content, None)
-        pass
 
     # Check the message type if it's text or blob to process the message
     # accordingly
@@ -219,9 +221,9 @@ class ChatService:
                 sender=sender,
                 type=msg_type
             )
-            chat_history = self.get_chat_history()
+            chat_history = self.__get_chat_history()
             chat_history.messages.append(message)
-            self.save_chat_history(chat_history)
+            self.__save_chat_history(chat_history)
             return message
         except:
             return None
@@ -229,7 +231,7 @@ class ChatService:
 
     # Searches for a ChatMessage through the ChatHistory
     def __retrieve_message(self, msg_id: str) -> ChatMessage:
-        messages = self.get_chat_history().messages
+        messages = self.__get_chat_history().messages
         for msg in messages:
             if msg.id == msg_id:
                 return msg
@@ -237,14 +239,14 @@ class ChatService:
 
     def __set_existing_message(self, msg_id: str, new_msg: ChatMessage, delete: bool = False) -> bool:
         try:
-            messages = self.get_chat_history().messages
+            messages = self.__get_chat_history().messages
             for msg in messages:
                 if msg.id == msg_id:
                     if delete:
                         del msg
                     else:
                         msg = new_msg
-            return self.save_chat_history()
+            return self.__save_chat_history()
         except:
             return False
 
