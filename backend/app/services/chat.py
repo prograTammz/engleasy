@@ -88,6 +88,11 @@ class ChatService:
     # Since user messages are usually answers, it will search for releated
     # message to the question and deletes it, the question will be repeated.
     async def delete_message(self, msg_id: str) -> bool:
+        message = self.__retrieve_message(msg_id)
+        # Deletes the message from History
+        self.__set_existing_message(msg_id, None, True)
+        # Emptys the existing answer in Questionnaire
+        self.__set_existing_answer(message.text, None)
         pass
 
     # Check the message type if it's text or blob to process the message
