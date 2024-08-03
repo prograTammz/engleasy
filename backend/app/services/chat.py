@@ -11,19 +11,22 @@ from app.models.score import EnglishScoreSheet
 from app.services.scores import save_score
 from app.services.assessment import generate_score_sheet, generate_questionnaire
 # Utilities
-from app.utils import redis_client
+from app.utils.redis_client import redis_client
 
 class ChatService:
     # Takes the user_id after openning connection and authenticating
     # the user, it starts the assesment session
-    async def __init__(self, user_id: str, websocket: WebSocket):
+    def __init__(self, user_id: str, websocket: WebSocket = None):
         self.user_id = user_id
         self.websocket = websocket
+
+    # Setups the ChatService MUST BE CALLED BEFORE DOING ANYTHING
+    async def setup(self):
         await self.__start_assessment()
-        await self.get_chat_history()
+        self.get_chat_history()
 
     # Processes Every message user sends
-    async def handle_message(self, msg: str) -> List[ChatMessage]:
+    async def handle_message(self, msg:MutableMapping[str, Any]) -> List[ChatMessage]:
         next_question = self.__get_next_question()
 
         # If there are questions not answerred
@@ -31,10 +34,10 @@ class ChatService:
             msg_type = self.__check_message_type(msg)
             if(msg_type == 'text'):
                 msg = self.__cast_message_text(msg)
-                return await self.handle_text_message(msg)
+                return self.handle_text_message(msg)
             else:
                 msg = self.__cast_message_blob(msg)
-                return await self.handle_blob_message(msg)
+                return self.handle_blob_message(msg)
 
         # If it's Done
         else:
@@ -43,7 +46,7 @@ class ChatService:
 
             return [self.__create_message(bot_response, 'bot'), self.__create_message(score_sheet.model_dump_json(), 'bot', 'sheet')]
 
-    # Saves the answer to questionaire
+    # Saves the answer to questionnaire
     def handle_text_message(self, msg: str) -> List[ChatMessage]:
         # Answer the current question
         self.__set_new_answer(msg)
@@ -78,10 +81,10 @@ class ChatService:
 
 
     # Comepletes the assessment by scoring and saving the score
-    # and deleting the questionaire & chat history
+    # and deleting the questionnaire & chat history
     async def complete_assessment(self) -> EnglishScoreSheet:
         try:
-            score_sheet = await generate_score_sheet(self.questionaire)
+            score_sheet = await generate_score_sheet(self.questionnaire)
             save_score(score_sheet)
             redis_client.delete(f"questionnaire_{self.user_id}")
             redis_client.delete(f"chat_history_{self.user_id}")
@@ -114,7 +117,7 @@ class ChatService:
     # Edits the message (Only User Message)
     # Since user messages are usually answers, it will search for releated
     # message to the question and modifies it.
-    async def edit_message(self, msg_id:str, msg_text:str) -> bool:
+    def edit_message(self, msg_id:str, msg_text:str) -> bool:
         message = self.__retrieve_message(msg_id)
         # Update message
         message.content = msg_text
@@ -129,7 +132,7 @@ class ChatService:
     # Deletes the message (Only User Message)
     # Since user messages are usually answers, it will search for releated
     # message to the question and deletes it, the question will be repeated.
-    async def delete_message(self, msg_id: str) -> bool:
+    def delete_message(self, msg_id: str) -> bool:
         message = self.__retrieve_message(msg_id)
         # Deletes the message from History
         self.__set_existing_message(msg_id, None, True)
@@ -161,15 +164,16 @@ class ChatService:
             self.questionnaire = redis_client.get(f"questionnaire_{self.user_id}")
             if not self.questionnaire:
                 self.questionnaire = await generate_questionnaire()
-                return await self.__save_questionaire()
+                return await self.__save_questionnaire()
         except:
-            await self.websocket.close()
+            if self.websocket:
+                await self.websocket.close()
             return False
 
-    # Goes through all the questions of the Questionaire and return the
+    # Goes through all the questions of the questionnaire and return the
     # unanswered question for the user to answer
     def __get_next_question(self) -> Question:
-        for question in self.questionaire.questions:
+        for question in self.questionnaire.questions:
             if question.answer is None:
                 return question
         return None
@@ -212,26 +216,26 @@ class ChatService:
         except:
             return False
 
-    # Will search in questionaire similar text in anser and replace it.
+    # Will search in questionnaire similar text in anser and replace it.
     def __set_existing_answer(self, msg_text: str, new_text: str) -> bool:
-        for question in self.questionaire.questions:
+        for question in self.questionnaire.questions:
             if question.answer == msg_text:
                 question.answer = new_text
-                return self.__save_questionaire()
+                return self.__save_questionnaire()
         return False
 
     def __set_new_answer(self, answer: str) -> bool:
-        for question in self.questionaire.questions:
+        for question in self.questionnaire.questions:
             if question.answer is None:
                 question.answer = answer
-                return self.__save_questionaire()
+                return self.__save_questionnaire()
         return False
 
 
-    def __save_questionaire(self) -> bool:
+    def __save_questionnaire(self) -> bool:
         try:
-            questionaire_data = self.questionaire.model_dump_json()
-            redis_client.set(f"questionnaire_{self.user_id}", questionaire_data)
+            questionnaire_data = self.questionnaire.model_dump_json()
+            redis_client.set(f"questionnaire_{self.user_id}", questionnaire_data)
             return True
         except:
             return False
