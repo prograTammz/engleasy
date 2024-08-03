@@ -1,4 +1,5 @@
 # Packages
+from fastapi import WebSocket
 from typing import Any, Literal, cast, MutableMapping
 from uuid import uuid4
 from datetime import datetime, timezone
@@ -8,18 +9,18 @@ from app.models.chat import ChatMessage, ChatHistory
 from app.models.score import EnglishScoreSheet
 # Services
 from app.services.scores import save_score
-from app.services.assessment import generate_score_sheet
+from app.services.assessment import generate_score_sheet, generate_questionnaire
 # Utilities
 from app.utils import redis_client
 
 class ChatService:
     # Takes the user_id after openning connection and authenticating
     # the user, it starts the assesment session
-    async def __init__(self, user_id):
+    async def __init__(self, user_id: str, websocket: WebSocket):
         self.user_id = user_id
-        self.questionaire = await self.__start_assessment()
-        self.chat_history = await self.get_chat_history()
-        pass
+        self.websocket = websocket
+        await self.__start_assessment()
+        await self.get_chat_history()
 
     # Processes Every message user sends
     async def handle_message(self, msg: str) -> ChatMessage:
@@ -50,7 +51,7 @@ class ChatService:
     def get_chat_history(self) -> ChatHistory:
         chat_data = redis_client.get(f"chat_{self.user_id}")
         if chat_data:
-            return ChatHistory.model_validate_json(chat_data)
+            self.chat_history = ChatHistory.model_validate_json(chat_data)
         else:
             self.chat_history = ChatHistory(
                 user_id=self.user_id,
@@ -99,8 +100,15 @@ class ChatService:
 
     # Starts assessment session either by creating a questionnaire through
     # ChatGPT or retrieving existing one from redis
-    async def __start_assessment(self) -> Questionnaire:
-        pass
+    async def __start_assessment(self) -> bool:
+        try:
+            self.questionnaire = redis_client.get(f"questionnaire_{self.user_id}")
+            if not self.questionnaire:
+                self.questionnaire = await generate_questionnaire()
+                return await self.__save_questionaire()
+        except:
+            await self.websocket.close()
+            return False
 
     # Goes through all the questions of the Questionaire and return the
     # unanswered question for the user to answer
