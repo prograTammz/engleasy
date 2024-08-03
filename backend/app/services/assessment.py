@@ -61,7 +61,7 @@ async def generate_questionnaire() -> Questionnaire:
 # ----------------------------
 
 # Prompt for generating criteria for scoring the questionnaire
-async def generate_score_sheet(questionnaire_json: str, user_id:str ) -> EnglishScoreSheet:
+async def generate_score_sheet(questionnaire: Questionnaire, user_id:str ) -> EnglishScoreSheet:
 
     marking_criteria = """
     You are a scoring assistant for language proficiency tests. Score each answer based on the following criteria:
@@ -128,7 +128,7 @@ async def generate_score_sheet(questionnaire_json: str, user_id:str ) -> English
     and don't add the word "json" at the beginning and don't add comments the result need to be pure JSON
     """
 
-    prompt = f"{marking_criteria}\n\n{questionnaire_json}"
+    prompt = f"{marking_criteria}\n\n{questionnaire.model_dump_json()}"
 
     response = await create_gpt_completion(prompt)
 
