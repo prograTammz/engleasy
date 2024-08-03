@@ -31,7 +31,7 @@ class ChatService:
             return [self.__create_message('The assessment is already over','bot')]
 
         chat_history = self.get_chat_history()
-        if chat_history.messages:
+        if not chat_history.messages:
             welcome_message = self.__create_message(
             """
                 Let's start your English assessment it will be 4 questions only.
@@ -60,7 +60,7 @@ class ChatService:
         # If there are questions not answerred
         if next_question:
             msg_type = self.__check_message_type(msg)
-            if(msg_type == 'text'):
+            if msg_type == 'text':
                 msg = self.__cast_message_text(msg)
                 return self.handle_text_message(msg)
             else:
