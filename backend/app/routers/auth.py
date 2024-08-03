@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import WebSocket, APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from app.models.user import User, UserCreate, UserToken
 from app.utils.mongo_client import users_collection
@@ -53,3 +53,28 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             headers={"WWW-Authenticate": "Bearer"},
         )
     return User(**user)
+
+async def get_current_user_websocket(websocket: WebSocket):
+    auth_header = websocket.headers.get("Authorization")
+    if not auth_header:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return None
+
+    try:
+        scheme, token = auth_header.split()
+        if scheme.lower() != "bearer":
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return None
+
+        decoded = decode_access_token(token)
+        user_id: str = decoded.get("sub")
+        user = await users_collection.find_one({"_id": ObjectId(user_id)})
+        user['id'] = user_id
+        if user is None:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return User(**user)
+
+
+    except Exception:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return None
