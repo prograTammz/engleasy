@@ -23,7 +23,6 @@ class ChatService:
     # Setups the ChatService MUST BE CALLED BEFORE DOING ANYTHING
     async def setup(self):
         await self.__start_assessment()
-        self.get_chat_history()
 
     def get_opening_message(self) -> List[ChatMessage]:
         next_question = self.__get_next_question()
@@ -123,23 +122,23 @@ class ChatService:
 
     # Retrieves the ChatHistory from redis if exit, it not it creates new one
     def get_chat_history(self) -> ChatHistory:
-        chat_data = redis_client.get(f"chat_{self.user_id}")
+        chat_data = redis_client.get(f"chat_history_{self.user_id}")
+        chat_history = None
         if chat_data:
-            self.chat_history = ChatHistory.model_validate_json(chat_data)
+            chat_history = ChatHistory.model_validate_json(chat_data)
         else:
-            self.chat_history = ChatHistory(
-                user_id=self.user_id,
+            chat_history = ChatHistory(
                 messages=[]
             )
-            self.save_chat_history()
+            self.save_chat_history(chat_history)
 
-        return self.chat_history
+        return chat_history
 
     #  Saves the chatHistory to Redis
-    def save_chat_history(self) -> bool:
+    def save_chat_history(self, chat_history: ChatHistory) -> bool:
         try:
-            chat_data = self.chat_history.model_dump_json()
-            redis_client.set(f"chat_{self.user_id}", chat_data)
+            chat_data = chat_history.model_dump_json()
+            redis_client.set(f"chat_history_{self.user_id}", chat_data)
             return True
         except:
             return False
@@ -192,10 +191,11 @@ class ChatService:
     async def __start_assessment(self) -> bool:
         try:
             questionnaire = redis_client.get(f"questionnaire_{self.user_id}")
-            self.questionnaire = Questionnaire.model_validate_json(questionnaire)
-            if not self.questionnaire:
+            if questionnaire:
+                self.questionnaire = Questionnaire.model_validate_json(questionnaire)
+            else:
                 self.questionnaire = await generate_questionnaire()
-                return await self.__save_questionnaire()
+                return self.__save_questionnaire()
         except:
             if self.websocket:
                 await self.websocket.close()
@@ -219,8 +219,9 @@ class ChatService:
                 sender=sender,
                 type=msg_type
             )
-            self.chat_history.messages.append(message)
-            self.save_chat_history()
+            chat_history = self.get_chat_history()
+            chat_history.messages.append(message)
+            self.save_chat_history(chat_history)
             return message
         except:
             return None
@@ -228,7 +229,7 @@ class ChatService:
 
     # Searches for a ChatMessage through the ChatHistory
     def __retrieve_message(self, msg_id: str) -> ChatMessage:
-        messages = self.chat_history.messages
+        messages = self.get_chat_history().messages
         for msg in messages:
             if msg.id == msg_id:
                 return msg
@@ -236,7 +237,7 @@ class ChatService:
 
     def __set_existing_message(self, msg_id: str, new_msg: ChatMessage, delete: bool = False) -> bool:
         try:
-            messages = self.chat_history.messages
+            messages = self.get_chat_history().messages
             for msg in messages:
                 if msg.id == msg_id:
                     if delete:
