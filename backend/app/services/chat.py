@@ -1,6 +1,6 @@
 # Packages
 from fastapi import WebSocket
-from typing import Any, Literal, cast, MutableMapping
+from typing import Any, Literal, List, cast, MutableMapping
 from uuid import uuid4
 from datetime import datetime, timezone
 # Models
@@ -23,17 +23,59 @@ class ChatService:
         await self.get_chat_history()
 
     # Processes Every message user sends
-    async def handle_message(self, msg: str) -> ChatMessage:
-        pass
+    async def handle_message(self, msg: str) -> List[ChatMessage]:
+        next_question = self.__get_next_question()
+
+        # If there are questions not answerred
+        if next_question:
+            msg_type = self.__check_message_type(msg)
+            if(msg_type == 'text'):
+                msg = self.__cast_message_text(msg)
+                return await self.handle_text_message(msg)
+            else:
+                msg = self.__cast_message_blob(msg)
+                return await self.handle_blob_message(msg)
+
+        # If it's Done
+        else:
+            score_sheet = await self.complete_assessment()
+            bot_response = f"Assessment complete. Your score: {score_sheet.overall_score}, Your Level: {score_sheet.cefr_level}"
+
+            return [self.__create_message(bot_response, 'bot'), self.__create_message(score_sheet.model_dump_json(), 'bot', 'sheet')]
 
     # Saves the answer to questionaire
-    async def handle_text_message(self, msg: str) -> ChatMessage:
-        pass
+    def handle_text_message(self, msg: str) -> List[ChatMessage]:
+        # Answer the current question
+        self.__set_new_answer(msg)
+        # Create User Message
+        self.__create_message(msg, 'user')
+        # Respond with New Question
+        return self.handle_question_response()
 
     # Will convert the audio to transcript to save answer as text while
     #  Scoring the prouncation with separate service
-    async def handle_blob_message(self, msg: bytes) -> ChatMessage:
-        pass
+    def handle_blob_message(self, msg: bytes) -> List[ChatMessage]:
+        return [self.__create_message('Not ready yet', 'bot')]
+
+    def handle_question_response(self) -> List[ChatMessage]:
+        next_question = self.__get_next_question()
+        responses = []
+        responses.append(self.__create_message(next_question.question, 'bot'))
+
+        # Additional Response
+        bot_response_2 = None
+        if next_question.type == 'reading':
+            bot_response_2 = next_question.text_content
+        if next_question.type == 'listening':
+            transcript = next_question.audio_content
+            # TODO: Upload Audio to AWS
+            # TODO: Generate Audio from transcript
+            # TODO: Create an Audio bot message
+        if bot_response_2:
+            responses.append(self.__create_message(bot_response_2, 'bot', 'audio'))
+
+        return responses
+
 
     # Comepletes the assessment by scoring and saving the score
     # and deleting the questionaire & chat history
@@ -75,7 +117,7 @@ class ChatService:
     async def edit_message(self, msg_id:str, msg_text:str) -> bool:
         message = self.__retrieve_message(msg_id)
         # Update message
-        message.text = msg_text
+        message.content = msg_text
         message.is_modified = True
         message.modified = datetime.now(timezone.utc)
         # Save new History
@@ -92,7 +134,7 @@ class ChatService:
         # Deletes the message from History
         self.__set_existing_message(msg_id, None, True)
         # Emptys the existing answer in Questionnaire
-        self.__set_existing_answer(message.text, None)
+        self.__set_existing_answer(message.content, None)
         pass
 
     # Check the message type if it's text or blob to process the message
@@ -133,13 +175,14 @@ class ChatService:
         return None
 
     # Creates a ChatMessage Object & updates the history
-    def __create_message(self, msg_text:str, sender: Literal['bot', 'user']) -> ChatMessage:
+    def __create_message(self, msg_text:str, sender: Literal['bot', 'user'], msg_type='text') -> ChatMessage:
         try:
             message = ChatMessage(
                 created=datetime.now(timezone.utc),
                 id=str(uuid4()),
-                text=msg_text,
-                sender=sender
+                content=msg_text,
+                sender=sender,
+                type=msg_type
             )
             self.chat_history.messages.append(message)
             self.save_chat_history()
@@ -176,6 +219,14 @@ class ChatService:
                 question.answer = new_text
                 return self.__save_questionaire()
         return False
+
+    def __set_new_answer(self, answer: str) -> bool:
+        for question in self.questionaire.questions:
+            if question.answer is None:
+                question.answer = answer
+                return self.__save_questionaire()
+        return False
+
 
     def __save_questionaire(self) -> bool:
         try:
