@@ -1,6 +1,5 @@
 # Packages
-from fastapi import Message
-from typing import Literal
+from typing import Any, Literal, cast, MutableMapping
 from uuid import uuid4
 from datetime import datetime, timezone
 # Models
@@ -21,7 +20,7 @@ class ChatService:
         pass
 
     # Processes Every message user sends
-    async def handle_message(self, msg: Message) -> ChatMessage:
+    async def handle_message(self, msg: str) -> ChatMessage:
         pass
 
     # Saves the answer to questionaire
@@ -74,8 +73,20 @@ class ChatService:
 
     # Check the message type if it's text or blob to process the message
     # accordingly
-    async def __check_message_type(self, msg: Message) -> Literal['text', 'blob']:
-        pass
+    def __check_message_type(self, msg:MutableMapping[str, Any]) -> Literal['text', 'blob']:
+        if msg['text'].startswith("data:audio/mp3;"):
+            return 'blob'
+        else:
+            return 'text'
+
+    # Casts the message to Bytes
+    def __cast_message_blob(self, msg:MutableMapping[str, Any]) -> bytes:
+        return cast(bytes, msg["bytes"])
+
+    # Casts the message to text
+    def __cast_message_text(self, msg:MutableMapping[str, Any]) -> str:
+        return cast(str, msg['text'])
+
 
     # Starts assessment session either by creating a questionnaire through
     # ChatGPT or retrieving existing one from redis
