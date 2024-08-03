@@ -1,20 +1,42 @@
 # Packages
-from fastapi import APIRouter, WebSocket, Depends
-from typing import List
+from fastapi import APIRouter, WebSocket, Depends, WebSocketDisconnect
+from typing import List, Dict
 #Routing
-from app.routers.auth import get_current_user
+from app.routers.auth import get_current_user, get_current_user_websocket
 # Models
 from app.models.chat import ChatMessage
 from app.models.user import User
 # Services
-
+from app.services.chat import ChatService
 # Utilities
 
 router = APIRouter()
+connections: Dict[str, WebSocket] = {}
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    pass
+    # Opnning the Socket connection & storing it in the memory
+    await websocket.accept()
+    # Getting the token
+    user: User = await get_current_user_websocket(websocket)
+    user_id = user.id
+    connections[user_id] = websocket
+    # Initalizing ChatService
+    chat_service = ChatService(user_id, websocket)
+    await chat_service.setup()
+
+    try:
+        while True:
+            data = await websocket.receive()
+            responses = await chat_service.handle_message(data)
+
+            for response in responses:
+                websocket.send_json(response.model_dump_json())
+
+
+    except WebSocketDisconnect:
+        # Deleting the connection
+        del connections[user_id]
 
 # The chatbot will use this request to get the chat history IF EXIST
 # Before openning a websocket
