@@ -14,4 +14,3 @@ class ChatMessage(BaseModel):
 class ChatHistory(BaseModel):
     user_id: str
     messages: List[ChatMessage]
-    current_question_index: int
