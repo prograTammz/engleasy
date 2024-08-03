@@ -7,6 +7,7 @@ from app.models.assessment import Questionnaire, Question
 from app.models.chat import ChatMessage, ChatHistory
 from app.models.score import EnglishScoreSheet
 # Utilities
+from app.utils import redis_client
 
 class ChatService:
     # Takes the user_id after openning connection and authenticating
@@ -36,11 +37,22 @@ class ChatService:
         pass
 
     # Retrieves the ChatHistory from redis if exit, it not it creates new one
-    async def get_chat_history(self) -> ChatHistory:
-        pass
+    def get_chat_history(self) -> ChatHistory:
+        chat_data = redis_client.get(f"chat_{self.user_id}")
+        if chat_data:
+            return ChatHistory.model_validate_json(chat_data)
+        else:
+            self.chat_history = ChatHistory(
+                user_id=self.user_id,
+                messages=[]
+            )
+            self.save_chat_history()
+        return None
 
     #  Saves the chatHistory to Redis
-    async def save_chat_history(self) -> ChatHistory:
+    def save_chat_history(self) -> ChatHistory:
+        chat_data = self.chat_history.model_dump_json()
+        redis_client.set(f"chat_{self.user_id}", chat_data)
         pass
 
     # Edits the message (Only User Message)
