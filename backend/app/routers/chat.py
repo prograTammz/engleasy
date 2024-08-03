@@ -45,9 +45,14 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # The chatbot will use this request to get the chat history IF EXIST
 # Before openning a websocket
-@router.get("/messages", response_model=List[ChatMessage])
+@router.get("/messages")
 async def get_chat_history(current_user: User = Depends(get_current_user)):
-    pass
+    user_id = current_user.id
+    # Initalizing ChatService
+    chat_service = ChatService(user_id)
+    await chat_service.setup()
+
+    return chat_service.get_chat_history()
 
 # For editing a message, it will search the questionaire answers
 # and edit the answer accordingly
