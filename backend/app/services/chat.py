@@ -1,6 +1,8 @@
 # Packages
 from fastapi import Message
 from typing import Literal
+from uuid import uuid4
+from datetime import datetime, timezone
 # Models
 # Services
 from app.models.assessment import Questionnaire, Question
@@ -82,9 +84,21 @@ class ChatService:
     def __get_next_question(self) -> Question:
         pass
 
-    # Creates a ChatMessage Object
+    # Creates a ChatMessage Object & updates the history
     def __create_message(self, msg_text:str, sender: Literal['bot', 'user']) -> ChatMessage:
-        pass
+        try:
+            message = ChatMessage(
+                created=datetime.now(timezone.utc),
+                id=str(uuid4()),
+                text=msg_text,
+                sender=sender
+            )
+            self.chat_history.messages.append(message)
+            self.save_chat_history()
+            return message
+        except Exception:
+            return None
+
 
     # Searches for a ChatMessage through the ChatHistory
     def __retrieve_message(self, msg_id: str) -> ChatMessage:
