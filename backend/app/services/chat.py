@@ -161,7 +161,8 @@ class ChatService:
     # ChatGPT or retrieving existing one from redis
     async def __start_assessment(self) -> bool:
         try:
-            self.questionnaire = redis_client.get(f"questionnaire_{self.user_id}")
+            questionnaire = redis_client.get(f"questionnaire_{self.user_id}")
+            self.questionnaire = Questionnaire.model_validate_json(questionnaire)
             if not self.questionnaire:
                 self.questionnaire = await generate_questionnaire()
                 return await self.__save_questionnaire()
