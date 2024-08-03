@@ -13,19 +13,21 @@ from app.models.assessment import (Question, Questionnaire)
 async def generate_questionnaire() -> Questionnaire:
 
     prompt = """
-    Generate a unique English proficiency test questionnaire. Include four types of questions: reading, writing, listening, and speaking. Each type should have two questions. The format should be a JSON array with the following fields:
+    Generate a unique English proficiency test questionnaire. Include four types of questions: reading, writing, listening, and speaking. Each type should have one question. The format should be a JSON array with the following fields:
     - type: one of 'reading', 'writing', 'listening', 'speaking'
     - question: the question text
     - content_type: one of 'text' or 'audio'
-    - audio_content (optional): the transcript of the audio content (for listening type)
-    - audio_url (optional): the URL of the audio content (for listening type)
+    - text_content (for reading type): the passage content
+    - audio_content (for listening type): the transcript of the audio content
+    - audio_url (for listening type): the URL of the audio content
 
     Example:
     [
         {
             "type": "reading",
             "question": "What is the main idea of the passage?",
-            "content_type": "text"
+            "content_type": "text",
+            "text_content": "The passage content goes here..."
         },
         {
             "type": "writing",
@@ -45,13 +47,12 @@ async def generate_questionnaire() -> Questionnaire:
             "content_type": "text"
         }
     ]
-    and don't add the word json at the beginning
     """
 
     result = await create_gpt_completion(prompt)
-
     questionnaire_data = json.loads(result)
-    return Questionnaire(tests=[Question(**test) for test in questionnaire_data])
+
+    return Questionnaire(questions=[Question(**question) for question in questionnaire_data['questions']])
 
 
 
