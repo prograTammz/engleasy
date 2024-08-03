@@ -25,6 +25,35 @@ class ChatService:
         await self.__start_assessment()
         self.get_chat_history()
 
+    def get_opening_message(self) -> List[ChatMessage]:
+        next_question = self.__get_next_question()
+
+        if not next_question:
+            return [self.__create_message('The assessment is already over','bot')]
+
+        chat_history = self.get_chat_history()
+        if chat_history.messages:
+            welcome_message = self.__create_message(
+            """
+                Let's start your English assessment it will be 4 questions only.
+
+                The questions will be Listening, Speaking, Writting & Reading,
+                Each response will be consider an answer,
+                so be careful with your responses.
+
+                You can answer with text or voice message.
+
+                It's a must to answer with voice message in speaking,
+                and preferrable in the reading & listening as well.
+
+                Your answer for writting question must be text message!
+            """, 'bot')
+            question_one = self.handle_question_response()
+            return [welcome_message,*question_one]
+        else:
+            message = self.__create_message("Resuming the Assessment", 'bot')
+            return [message, *self.handle_question_response()]
+
     # Processes Every message user sends
     async def handle_message(self, msg:MutableMapping[str, Any]) -> List[ChatMessage]:
         next_question = self.__get_next_question()
@@ -84,7 +113,7 @@ class ChatService:
     # and deleting the questionnaire & chat history
     async def complete_assessment(self) -> EnglishScoreSheet:
         try:
-            score_sheet = await generate_score_sheet(self.questionnaire)
+            score_sheet = await generate_score_sheet(self.questionnaire, self.user_id)
             save_score(score_sheet)
             redis_client.delete(f"questionnaire_{self.user_id}")
             redis_client.delete(f"chat_history_{self.user_id}")
@@ -103,7 +132,8 @@ class ChatService:
                 messages=[]
             )
             self.save_chat_history()
-        return None
+
+        return self.chat_history
 
     #  Saves the chatHistory to Redis
     def save_chat_history(self) -> bool:
