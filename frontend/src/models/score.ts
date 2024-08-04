@@ -41,7 +41,7 @@ export interface EnglishScoreSheet {
   cefr_level: CEFR;
 }
 
-enum CEFR {
+export enum CEFR {
   A1 = "A1",
   A2 = "A2",
   B1 = "B1",

@@ -1,10 +1,10 @@
-enum ChatType {
+export enum ChatType {
   TEXT = "text",
   AUDIO = "audio",
   SHEET = "sheet",
 }
 
-enum ChatSender {
+export enum ChatSender {
   USER = "user",
   BOT = "bot",
 }
