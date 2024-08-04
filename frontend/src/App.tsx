@@ -1,11 +1,21 @@
 import { ThemeProvider } from "@/contexts/theme";
-import "./styles/global.css";
-import { ChatWindow } from "@/features/chat-widget/ChatWindow";
+import { lazy, Suspense } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// Lazy Load the pages
+const Homepage = lazy(() => import("@/pages/Home"));
 
 function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <ChatWindow />;
+      {/* <ChatWindow />; */}
+      <BrowserRouter>
+        <Suspense>
+          <Routes>
+            <Route index element={<Homepage />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }
