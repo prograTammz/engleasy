@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-context-menu";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 export default function LoginPage() {
   return (
@@ -43,9 +43,9 @@ export default function LoginPage() {
           </div>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
-            <Link href="/register" className="underline">
+            <NavLink to="/register" className="underline">
               Sign up
-            </Link>
+            </NavLink>
           </div>
         </CardContent>
       </Card>
