@@ -3,6 +3,8 @@ import useStorage from "@/hooks/useStorage";
 import { User, UserToken } from "@/models/user";
 import { Action, ContextValue, State } from "@/models/auth";
 import AuthAPI from "@/services/apiAuth";
+import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 const initialState: State = {
   userToken: null,
@@ -42,12 +44,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     authReducer,
     initialState
   );
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const login = async (email: string, password: string) => {
     const user: User = { email, password };
-    const userToken = await AuthAPI.login(user);
-    setItem(userToken);
-    dispatch({ type: "LOGIN", payload: { userToken } });
+    try {
+      const userToken = await AuthAPI.login(user);
+      setItem(userToken);
+      navigate("/app");
+      toast({
+        title: "Successful!",
+        description: <span>You are logged in!</span>,
+      });
+      dispatch({ type: "LOGIN", payload: { userToken } });
+    } catch (error: unknown) {
+      // Handler Error Show a toast
+      const message = (error as Error).message;
+      toast({
+        title: "Authentication Error",
+        description: <span>{message}</span>,
+        variant: "destructive",
+      });
+    }
   };
 
   const logout = () => {
@@ -55,7 +74,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     dispatch({ type: "LOGOUT" });
   };
 
-  const register = async () => {};
+  const register = async (email: string, name: string, password: string) => {
+    const userPayload: User = { email, name, password };
+    try {
+      const userResponse = await AuthAPI.register(userPayload);
+      dispatch({ type: "REGISTER", payload: { user: userResponse } });
+      navigate("/login");
+      toast({
+        title: "Successful!",
+        description: <span>You account has been created Successfully!</span>,
+      });
+    } catch (error: unknown) {
+      const message = (error as Error).message;
+      toast({
+        title: "Authentication Error",
+        description: <span>{message}</span>,
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <AuthContext.Provider
