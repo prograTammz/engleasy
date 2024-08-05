@@ -35,12 +35,13 @@ const formSchema = z.object({
 
 export default function RegisterPage() {
   const { isAuthenticated, register } = useAuth();
-  //   const { register, reset } = useForm();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
+      password: "",
+      name: "",
     },
   });
 
