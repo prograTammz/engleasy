@@ -18,7 +18,7 @@ async function login(user: User): Promise<UserToken> {
 
 async function register(user: User): Promise<User> {
   try {
-    const res = await fetch(`${API_URL}/token`, {
+    const res = await fetch(`${API_URL}/register`, {
       body: JSON.stringify(user),
       method: "POST",
       headers: {
