@@ -4,6 +4,7 @@ const useRecorder = () => {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
   const startRecording = async () => {
@@ -22,6 +23,7 @@ const useRecorder = () => {
         type: "audio/mp3",
       });
       const audioUrl = URL.createObjectURL(audioBlob);
+      setAudioBlob(audioBlob);
       setAudioUrl(audioUrl);
       audioChunksRef.current = [];
     };
@@ -34,7 +36,7 @@ const useRecorder = () => {
     mediaRecorderRef.current?.stop();
   };
 
-  return { isRecording, startRecording, stopRecording, audioUrl };
+  return { isRecording, startRecording, stopRecording, audioUrl, audioBlob };
 };
 
 export default useRecorder;
