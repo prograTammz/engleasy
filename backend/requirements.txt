@@ -1,6 +1,10 @@
 fastapi
+fastapi-cors
 uvicorn
 pydantic
+email-validator
+pydantic[email]
+python-multipart
 motor
 openai
 boto3

@@ -1,5 +1,6 @@
 # main.py
 from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from app.routers import auth, assessment, scores,chat
 # To be cleaned VVVVVVVV
 # from fastapi.responses import StreamingResponse
@@ -18,6 +19,18 @@ from app.routers import auth, assessment, scores,chat
 # To be cleaned ^^^^^^^^^^
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:4242",  # React frontend URL
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(auth.router, prefix="/auth")
 app.include_router(assessment.router, prefix="/assessment")
