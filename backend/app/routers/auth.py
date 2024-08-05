@@ -1,6 +1,6 @@
 from fastapi import WebSocket, APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from app.models.user import User, UserCreate, UserToken
+from app.models.user import User, UserCreate, UserToken, UserLogin
 from app.utils.mongo_client import users_collection
 from app.services.auth import get_password_hash, verify_password, create_access_token, decode_access_token
 from uuid import uuid4
@@ -21,18 +21,18 @@ async def register(user: UserCreate):
     new_user.id = str(result.inserted_id)
     return new_user
 
-@router.post("/token", response_model=UserToken)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await users_collection.find_one({"email": form_data.username})
-    if not user or not verify_password(form_data.password, user["hashed_password"]):
+@router.post("/login", response_model=UserToken)
+async def login(login: UserLogin):
+    user = await users_collection.find_one({"email": login.email})
+    print(user)
+    if not user or not verify_password(login.password, user["hashed_password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = create_access_token(
-        data={"sub": str(user["_id"])}
-    )
+
+    access_token = create_access_token(data={"sub": user["id"]})
     return {"access_token": access_token, "token_type": "bearer"}
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
