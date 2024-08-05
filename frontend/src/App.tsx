@@ -3,6 +3,8 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "@/styles/global.css";
 import { AuthProvider } from "./contexts/auth";
+import ProtectedRoute from "./pages/ProtectedRoute";
+import { Toaster } from "./components/ui/toaster";
 // Lazy Load the pages
 const Homepage = lazy(() => import("@/pages/Home"));
 const LoginPage = lazy(() => import("@/pages/Login"));
@@ -15,14 +17,22 @@ const BotPage = lazy(() => import("@/pages/Bot"));
 
 function App() {
   return (
-    <AuthProvider>
-      <ThemeProvider defaultTheme="dark" storageKey="dark-mode">
-        <BrowserRouter>
+    <ThemeProvider defaultTheme="dark" storageKey="dark-mode">
+      <BrowserRouter>
+        <AuthProvider>
           <Suspense>
             <Routes>
+              <Route index path="/" element={<LoginPage />} />
               <Route path="login" element={<LoginPage />} />
               <Route path="register" element={<RegisterPage />} />
-              <Route path="app" element={<AppLayout />}>
+              <Route
+                path="app"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                }
+              >
                 <Route index element={<Homepage />} />
                 <Route path="home" element={<Homepage />} />
                 <Route path="bot" element={<BotPage />} />
@@ -32,9 +42,10 @@ function App() {
               <Route path="*" element={<PageNotFound />} />
             </Routes>
           </Suspense>
-        </BrowserRouter>
-      </ThemeProvider>
-    </AuthProvider>
+        </AuthProvider>
+      </BrowserRouter>
+      <Toaster />
+    </ThemeProvider>
   );
 }
 
