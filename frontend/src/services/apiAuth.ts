@@ -42,4 +42,24 @@ async function register(user: User): Promise<User> {
   }
 }
 
-export default { login, register };
+async function me(userToken: UserToken): Promise<User> {
+  try {
+    const res = await fetch(`${API_URL}/me`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${userToken.token_type} ${userToken.access_token}`,
+      },
+    });
+    if (res.status !== 200) {
+      const body = await res.json();
+      throw new Error(body?.detail);
+    }
+    return await res.json();
+  } catch (error: unknown) {
+    console.log(error);
+    const message = (error as Error).message;
+    throw new Error(message ?? "Register has failed successfully!");
+  }
+}
+
+export default { login, register, me };
