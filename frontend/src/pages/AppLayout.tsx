@@ -60,7 +60,7 @@ const AppLayout: React.FC = () => {
 
   return (
     <>
-      <div className="grid min-h-screen w-screen md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <div className="grid h-screen w-screen md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] overflow-hidden">
         <div className="hidden border-r bg-muted/40 md:block">
           <div className="flex h-full max-h-screen flex-col gap-2">
             <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
@@ -127,7 +127,7 @@ const AppLayout: React.FC = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
-          <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 max-w-[100vw]">
+          <main className="p-4 lg:p-6 max-w-screen-lg m-auto overflow-y-scroll h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-60px)] no-scrollbar">
             <Outlet />
           </main>
         </div>
