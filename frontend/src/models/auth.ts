@@ -5,6 +5,7 @@ export interface State {
   isAuthenticated: boolean;
   userToken: UserToken | null;
   user: User | null;
+  isInitialized: boolean;
 }
 
 export interface ContextValue extends State {
@@ -18,6 +19,13 @@ export interface AuthProviderProps {
   children: ReactNode;
 }
 
+export type InitializeAction = {
+  type: "INITIALIZE";
+  payload: {
+    isAuthenticated: boolean;
+    user: User | null;
+  };
+};
 export type LoginAction = {
   type: "LOGIN";
   payload: {
@@ -36,4 +44,8 @@ export type RegisterAction = {
   };
 };
 
-export type Action = LoginAction | LogoutAction | RegisterAction;
+export type Action =
+  | InitializeAction
+  | LoginAction
+  | LogoutAction
+  | RegisterAction;
