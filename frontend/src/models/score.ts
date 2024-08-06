@@ -41,6 +41,8 @@ export interface EnglishScoreSheet {
   cefr_level: CEFR;
 }
 
+export interface ScoresResponse {}
+
 export enum CEFR {
   A1 = "A1",
   A2 = "A2",
@@ -48,4 +50,13 @@ export enum CEFR {
   B2 = "B2",
   C1 = "C1",
   C2 = "C2",
+}
+
+export enum CEFRTitle {
+  A1 = "Beginner",
+  A2 = "Elementary",
+  B1 = "Intermediate",
+  B2 = "Upper-Intermediate",
+  C1 = "Advanced",
+  C2 = "Proficient",
 }
