@@ -1,15 +1,17 @@
-import React, { createContext, useReducer, useContext } from "react";
+import React, { createContext, useReducer, useContext, useEffect } from "react";
 import useStorage from "@/hooks/useStorage";
 import { User, UserToken } from "@/models/user";
 import { Action, ContextValue, State } from "@/models/auth";
 import AuthAPI from "@/services/apiAuth";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import apiAuth from "@/services/apiAuth";
 
 const initialState: State = {
   userToken: null,
   user: null,
   isAuthenticated: false,
+  isInitialized: false,
 };
 
 const AuthContext = createContext<ContextValue>({
@@ -31,6 +33,13 @@ const authReducer = (state: State, action: Action): State => {
       return { ...state, userToken: null, isAuthenticated: false };
     case "REGISTER":
       return { ...state, userToken: null, isAuthenticated: false };
+    case "INITIALIZE":
+      return {
+        ...state,
+        isAuthenticated: action.payload.isAuthenticated,
+        user: action.payload.user,
+        isInitialized: true,
+      };
     default:
       return state;
   }
@@ -39,13 +48,58 @@ const authReducer = (state: State, action: Action): State => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { setItem, removeItem } = useStorage<UserToken>("authToken");
+  const { setItem, getItem, removeItem } = useStorage<UserToken>("authToken");
   const [{ user, userToken, isAuthenticated }, dispatch] = useReducer(
     authReducer,
     initialState
   );
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const initialize = async (): Promise<void> => {
+      try {
+        const userToken = getItem();
+
+        if (userToken) {
+          const user = await apiAuth.me(userToken);
+          navigate("/app");
+          dispatch({
+            type: "INITIALIZE",
+            payload: {
+              isAuthenticated: true,
+              user: user,
+            },
+          });
+        } else {
+          dispatch({
+            type: "INITIALIZE",
+            payload: {
+              isAuthenticated: false,
+              user: null,
+            },
+          });
+        }
+      } catch (error: unknown) {
+        console.log(error);
+        const message = (error as Error).message;
+        toast({
+          title: "Authentication Error",
+          description: <span>{message}</span>,
+          variant: "destructive",
+        });
+        dispatch({
+          type: "INITIALIZE",
+          payload: {
+            isAuthenticated: false,
+            user: null,
+          },
+        });
+      }
+    };
+
+    initialize();
+  }, []);
 
   const login = async (email: string, password: string) => {
     const user: User = { email, password };
