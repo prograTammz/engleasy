@@ -1,5 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScoreOverview } from "./ScoreOverview";
+import { CEFR } from "@/models/score";
 
 export const Score: React.FC = () => {
   return (
@@ -44,7 +46,7 @@ export const Score: React.FC = () => {
         </TabsList>
         <TabsContent value="overall">
           <div className="bg-muted p-4 rounded-lg">
-            <h1>Overall</h1>
+            <ScoreOverview cefr_level={CEFR.A2} overall_score={90} />
           </div>
         </TabsContent>
         <TabsContent value="writing">
