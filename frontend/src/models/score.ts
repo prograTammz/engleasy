@@ -32,7 +32,7 @@ export interface ListeningScore {
 
 export interface EnglishScoreSheet {
   user_id: string;
-  test_date: string;
+  test_date: Date;
   writing: WritingScore;
   speaking: SpeakingScore;
   reading: ReadingScore;
@@ -68,4 +68,39 @@ export const Advices = {
   B2: "At the B2 level, aim to refine your language skills and expand your vocabulary further. Read a variety of texts, including newspapers, novels, and academic articles. Watch documentaries and TED talks to expose yourself to different accents and advanced topics. Practice writing detailed essays and reports, focusing on argumentation and clarity. Participate in discussions and presentations to enhance your speaking skills. Seek feedback from teachers or language partners to identify areas for improvement and work on them systematically.",
   C1: "For C1 learners, the goal is to achieve greater accuracy and subtlety in your language use. Read complex texts and analyze their structure and vocabulary. Watch and listen to advanced content, such as news broadcasts and university lectures, to improve your comprehension of nuanced information. Write in-depth essays and research papers, paying close attention to style and coherence. Engage in high-level discussions and debates, focusing on expressing your ideas clearly and persuasively. Consider taking specialized language courses or certifications to challenge yourself further.",
   C2: "At the C2 level, focus on mastering the nuances of the language. Read widely across different genres and fields to enrich your vocabulary and understanding of idiomatic expressions. Engage with sophisticated media, such as classic literature, scientific journals, and philosophical debates. Write extensively, aiming for precision and elegance in your language. Participate in professional or academic discussions and presentations, refining your ability to argue and persuade effectively. Continually seek feedback and strive for excellence in all aspects of your language use, maintaining a high level of practice and exposure to English.",
+};
+
+export const exampleSheet: EnglishScoreSheet = {
+  user_id: "sfdnwednwnw",
+  test_date: new Date(),
+  writing: {
+    task_achievement: 20,
+    coherence_and_cohesion: 30,
+    lexical_resource: 40,
+    grammatical_range_and_accuracy: 50,
+    total: 140,
+  },
+  speaking: {
+    fluency_and_coherence: 20,
+    pronunciation: 30,
+    lexical_resource: 40,
+    grammatical_range_and_accuracy: 50,
+    total: 140,
+  },
+  reading: {
+    understanding_main_ideas: 10,
+    understanding_details: 15,
+    inference: 16,
+    lexical_resource: 9,
+    total: 50,
+  },
+  listening: {
+    understanding_main_ideas: 10,
+    understanding_details: 15,
+    inference: 16,
+    lexical_resource: 9,
+    total: 50,
+  },
+  overall_score: 250,
+  cefr_level: CEFR.C1,
 };
