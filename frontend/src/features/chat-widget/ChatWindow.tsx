@@ -17,6 +17,10 @@ import { PhaseBubble } from "./bubbles/PhaseBubble";
 import { Tabs } from "@/components/ui/tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { VoiceRecorder } from "./VoiceRecorder";
+import { TextBubble } from "../chat/TextBubble";
+import { ChatSender, ChatType } from "@/models/chat";
+import { SheetBubble } from "../chat/SheetBubble";
+import { exampleSheet } from "@/models/score";
 
 export const ChatWindow: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
@@ -58,6 +62,40 @@ export const ChatWindow: React.FC = () => {
           />
           <UserChatBubble text="Hi, thanks for connecting" />
           <PhaseBubble phaseName="Listening" phaseNumber={1} />
+          <TextBubble
+            chatMessage={{
+              id: "anything",
+              content: "hello",
+              type: ChatType.TEXT,
+              created: new Date(),
+              modified: new Date(),
+              is_modified: false,
+              sender: ChatSender.USER,
+            }}
+          />
+          <TextBubble
+            chatMessage={{
+              id: "anything",
+              content: "hello",
+              type: ChatType.TEXT,
+              created: new Date(),
+              modified: new Date(),
+              is_modified: true,
+              sender: ChatSender.BOT,
+            }}
+          />
+          <SheetBubble
+            chatMessage={{
+              id: "anything",
+              content: "hello",
+              type: ChatType.SHEET,
+              created: new Date(),
+              modified: new Date(),
+              is_modified: true,
+              sender: ChatSender.BOT,
+            }}
+            score_sheet={exampleSheet}
+          />
         </ScrollArea>
 
         {/* This is the footer */}
