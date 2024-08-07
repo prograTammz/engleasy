@@ -13,22 +13,25 @@ const useAudio = (url: string) => {
     const fetchAudio = async () => {
       try {
         const response = await fetch(url);
+        // If fetching fails
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        // Converts the audio to Blob and create HTMLAudioElement
         const audioBlob = await response.blob();
         setBlob(audioBlob);
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = new Audio(audioUrl);
         setAudio(audio);
 
+        // When the audio is loaded the duration is infinity
+        //this eventHandler fixes this bug
         const initalizeAudio = () => {
           if (audio.duration === Infinity || isNaN(Number(audio.duration))) {
             audio.currentTime = 1e101;
             audio.addEventListener("timeupdate", updateDuration);
           }
         };
-        audio.addEventListener("loadedmetadata", initalizeAudio);
 
         const updateDuration = (event: Event) => {
           const target = event.target as HTMLAudioElement;
@@ -40,11 +43,12 @@ const useAudio = (url: string) => {
         const updateTime = () => setCurrentTime(audio.currentTime);
         const handleEnd = () => setPlaying(false);
 
+        // Handling Audio Events and update state
+        audio.addEventListener("loadedmetadata", initalizeAudio);
         audio.addEventListener("timeupdate", updateTime);
         audio.addEventListener("ended", handleEnd);
 
-        setAudio(audio);
-
+        //Clears the eventListeners to avoid memory Leak
         return () => {
           audio.removeEventListener("loadedmetadata", initalizeAudio);
           audio.removeEventListener("timeupdate", updateTime);
