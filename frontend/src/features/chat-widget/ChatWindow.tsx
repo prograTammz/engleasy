@@ -21,6 +21,8 @@ import { TextBubble } from "../chat/TextBubble";
 import { ChatSender, ChatType } from "@/models/chat";
 import { SheetBubble } from "../chat/SheetBubble";
 import { exampleSheet } from "@/models/score";
+import { AudioBubble } from "../chat/AudioBubble";
+import { LoadingBubble } from "../chat/LoadingBubble";
 
 export const ChatWindow: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
@@ -96,6 +98,20 @@ export const ChatWindow: React.FC = () => {
             }}
             score_sheet={exampleSheet}
           />
+          <AudioBubble
+            chatMessage={{
+              id: "anything",
+              content:
+                "https://engleasy.s3.eu-west-1.amazonaws.com/1222efe1-2cf4-442d-aec1-59f6086302cd.mp3",
+              type: ChatType.SHEET,
+              created: new Date(),
+              modified: new Date(),
+              is_modified: true,
+              sender: ChatSender.BOT,
+            }}
+          />
+          <LoadingBubble chatSender={ChatSender.USER} />
+          <LoadingBubble chatSender={ChatSender.BOT} />
         </ScrollArea>
 
         {/* This is the footer */}
