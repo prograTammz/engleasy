@@ -22,32 +22,37 @@ const useAudio = (url: string) => {
         const audio = new Audio(audioUrl);
         setAudio(audio);
 
-        audio.addEventListener("loadedmetadata", () => {
-          setDuration(audio.duration);
-        });
-
-        audio.addEventListener("loadedmetadata", () => {
+        const initalizeAudio = () => {
           if (audio.duration === Infinity || isNaN(Number(audio.duration))) {
             audio.currentTime = 1e101;
-            audio.addEventListener("timeupdate", getDuration);
+            audio.addEventListener("timeupdate", updateDuration);
           }
-        });
+        };
+        audio.addEventListener("loadedmetadata", initalizeAudio);
 
-        audio.addEventListener("timeupdate", () => {
-          setCurrentTime(audio.currentTime);
-        });
+        const updateDuration = (event: Event) => {
+          const target = event.target as HTMLAudioElement;
+          target.currentTime = 0;
+          target.removeEventListener("timeupdate", updateDuration);
+          setDuration(audio.duration);
+        };
 
-        audio.addEventListener("ended", () => setPlaying(false));
+        const updateTime = () => setCurrentTime(audio.currentTime);
+        const handleEnd = () => setPlaying(false);
+
+        audio.addEventListener("timeupdate", updateTime);
+        audio.addEventListener("ended", handleEnd);
+
+        setAudio(audio);
+
+        return () => {
+          audio.removeEventListener("loadedmetadata", initalizeAudio);
+          audio.removeEventListener("timeupdate", updateTime);
+          audio.removeEventListener("ended", handleEnd);
+        };
       } catch (error) {
         console.error("Error fetching audio:", error);
       }
-    };
-
-    const getDuration = (event) => {
-      event.target.currentTime = 0;
-      event.target.removeEventListener("timeupdate", getDuration);
-      setDuration(event.target.duration);
-      console.log(event.target.duration, "hi");
     };
 
     fetchAudio();
