@@ -7,7 +7,7 @@ import { EnglishScoreSheet } from "@/models/score";
 import { LoadingBubble } from "./LoadingBubble";
 
 type BaseBubbleProps = {
-  isLoading: boolean;
+  isLoading?: boolean;
   chatSender?: ChatSender;
   chatMessage?: ChatMessage;
 };
