@@ -74,6 +74,8 @@ export const BaseBubble: React.FC<BaseBubbleProps> = ({
 };
 
 function formatDate(date: Date): string {
+  date = new Date(date);
+  console.log(date);
   const day = date.getDay();
   const month = date.getMonth();
   const year = date.getFullYear();
