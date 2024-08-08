@@ -12,17 +12,12 @@ import { Cross2Icon, PaperPlaneIcon, PlayIcon } from "@radix-ui/react-icons";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { BotChatBubble, UserChatBubble } from "./bubbles/ChatBubble";
-import { PhaseBubble } from "./bubbles/PhaseBubble";
 import { Tabs } from "@/components/ui/tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { VoiceRecorder } from "./VoiceRecorder";
-import { TextBubble } from "../chat/TextBubble";
+import { ChatBubble } from "../chat/ChatBubble";
 import { ChatSender, ChatType } from "@/models/chat";
-import { SheetBubble } from "../chat/SheetBubble";
 import { exampleSheet } from "@/models/score";
-import { AudioBubble } from "../chat/AudioBubble";
-import { LoadingBubble } from "../chat/LoadingBubble";
 
 export const ChatWindow: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
@@ -56,26 +51,7 @@ export const ChatWindow: React.FC = () => {
         </DialogHeader>
         {/* Body */}
         <ScrollArea className="h-[400px] w-full">
-          <BotChatBubble
-            text="Hi Jane, Amazing how mosey is similificng state complicance!"
-            botAvatar="https://api.dicebear.com/9.x/micah/svg?seed=Boo"
-            botName="Ava"
-            isLoading={false}
-          />
-          <UserChatBubble text="Hi, thanks for connecting" />
-          <PhaseBubble phaseName="Listening" phaseNumber={1} />
-          <TextBubble
-            chatMessage={{
-              id: "anything",
-              content: "hello",
-              type: ChatType.TEXT,
-              created: new Date(),
-              modified: new Date(),
-              is_modified: false,
-              sender: ChatSender.USER,
-            }}
-          />
-          <TextBubble
+          <ChatBubble
             chatMessage={{
               id: "anything",
               content: "hello",
@@ -86,32 +62,31 @@ export const ChatWindow: React.FC = () => {
               sender: ChatSender.BOT,
             }}
           />
-          <SheetBubble
+          <ChatBubble
             chatMessage={{
               id: "anything",
-              content: "hello",
+              content: JSON.stringify(exampleSheet),
               type: ChatType.SHEET,
               created: new Date(),
               modified: new Date(),
               is_modified: true,
               sender: ChatSender.BOT,
             }}
-            score_sheet={exampleSheet}
           />
-          <AudioBubble
+          <ChatBubble
             chatMessage={{
               id: "anything",
               content:
                 "https://engleasy.s3.eu-west-1.amazonaws.com/1222efe1-2cf4-442d-aec1-59f6086302cd.mp3",
-              type: ChatType.SHEET,
+              type: ChatType.AUDIO,
               created: new Date(),
               modified: new Date(),
               is_modified: true,
               sender: ChatSender.BOT,
             }}
           />
-          <LoadingBubble chatSender={ChatSender.USER} />
-          <LoadingBubble chatSender={ChatSender.BOT} />
+          <ChatBubble chatSender={ChatSender.BOT} isLoading={true} />
+          <ChatBubble chatSender={ChatSender.USER} isLoading={true} />
         </ScrollArea>
 
         {/* This is the footer */}
