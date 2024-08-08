@@ -1,3 +1,5 @@
+import { EnglishScoreSheet } from "./score";
+
 export enum ChatType {
   TEXT = "text",
   AUDIO = "audio",
@@ -11,12 +13,16 @@ export enum ChatSender {
 
 export interface ChatMessage {
   id: string;
-  content: string;
+  content: string | EnglishScoreSheet;
   type: ChatType;
   created: Date;
   modified: Date;
   is_modified: boolean;
   sender: ChatSender;
+}
+
+export interface ChatHistory {
+  messages: ChatMessage[];
 }
 
 export interface ChatState {
