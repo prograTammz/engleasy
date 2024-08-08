@@ -18,3 +18,13 @@ export interface ChatMessage {
   is_modified: boolean;
   sender: ChatSender;
 }
+
+export interface ChatState {
+  messages: ChatMessage[];
+}
+
+export type ChatAction =
+  | { type: "ADD_MESSAGE"; payload: ChatMessage }
+  | { type: "EDIT_MESSAGE"; payload: { id: string; text: string } }
+  | { type: "DELETE_MESSAGE"; payload: string }
+  | { type: "SET_MESSAGES"; payload: ChatMessage[] };
