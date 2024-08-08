@@ -7,15 +7,15 @@ import { EnglishScoreSheet } from "@/models/score";
 import { LoadingBubble } from "./LoadingBubble";
 
 type BaseBubbleProps = {
-  isLoading?: boolean;
-  chatSender?: ChatSender;
   chatMessage?: ChatMessage;
+  chatSender?: ChatSender;
+  isLoading?: boolean;
 };
 
 export const ChatBubble: React.FC<BaseBubbleProps> = ({
-  isLoading,
-  chatSender,
   chatMessage,
+  chatSender = ChatSender.BOT,
+  isLoading = false,
 }) => {
   if (isLoading && chatSender) {
     return <LoadingBubble chatSender={chatSender} />;
@@ -35,7 +35,7 @@ export const ChatBubble: React.FC<BaseBubbleProps> = ({
       )}
       {chatMessage!.type === ChatType.SHEET && (
         <SheetBubble
-          score_sheet={chatMessage!.content as unknown as EnglishScoreSheet}
+          score_sheet={JSON.parse(chatMessage!.content)}
           chatMessage={chatMessage!}
         />
       )}
