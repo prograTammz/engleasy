@@ -24,6 +24,7 @@ export type InitializeAction = {
   payload: {
     isAuthenticated: boolean;
     user: User | null;
+    userToken: UserToken | null;
   };
 };
 export type LoginAction = {
