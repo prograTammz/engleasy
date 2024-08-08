@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
+import { UserToken } from "@/models/user";
+import { ChatMessage } from "@/models/chat";
 
-const useSocket = <T,>(url: string, token: string) => {
-  const [messages, setMessages] = useState<T[]>([]);
+const useSocket = (url: string, userToken: UserToken) => {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [ws, setWs] = useState<WebSocket | null>(null);
 
   useEffect(() => {
-    const socket = new WebSocket(`${url}?token=${token}`);
-    setWs(socket);
+    const socket = new WebSocket(url);
+    socket.onopen = () => {
+      socket.send(
+        JSON.stringify({ type: "auth", token: userToken.access_token })
+      );
+    };
 
     socket.onmessage = (event) => {
-      const message = JSON.parse(event.data);
+      const message: ChatMessage = JSON.parse(event.data);
       setMessages((prevMessages) => [...prevMessages, message]);
     };
 
@@ -17,12 +23,14 @@ const useSocket = <T,>(url: string, token: string) => {
       console.log("WebSocket closed");
     };
 
+    setWs(socket);
+
     return () => {
       socket.close();
     };
-  }, [url, token]);
+  }, [url, userToken]);
 
-  const sendMessage = (message: string) => {
+  const sendMessage = (message: ChatMessage) => {
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
     }
