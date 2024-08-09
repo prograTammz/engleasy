@@ -42,7 +42,7 @@ async def login(login: UserLogin):
 
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserBase:
     payload = decode_access_token(token)
     if not payload:
         raise HTTPException(
@@ -65,25 +65,20 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 async def get_me(current_user: UserBase = Depends(get_current_user)):
     return current_user
 
-async def get_current_user_websocket(websocket: WebSocket):
-    auth_header = websocket.headers.get("Authorization")
-    if not auth_header:
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-        return None
-
+async def get_current_user_websocket(websocket: WebSocket) -> UserBase:
     try:
-        scheme, token = auth_header.split()
-        if scheme.lower() != "bearer":
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-            return None
+        data = await websocket.receive_json()
+        token = data.get("token")
 
-        decoded = decode_access_token(token)
-        user_id: str = decoded.get("sub")
-        user = await users_collection.find_one({"_id": ObjectId(user_id)})
-        user['id'] = user_id
+        if not token:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+
+        user = await get_current_user(token)
+
         if user is None:
             await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-        return User(**user)
+        return user
 
 
     except Exception:
