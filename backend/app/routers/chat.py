@@ -1,6 +1,6 @@
 # Packages
-from fastapi import APIRouter, WebSocket, Depends, WebSocketDisconnect
-from typing import List, Dict
+from fastapi import APIRouter, WebSocket, Depends, WebSocketDisconnect,HTTPException, status
+from typing import Dict
 #Routing
 from app.routers.auth import get_current_user, get_current_user_websocket
 # Models
