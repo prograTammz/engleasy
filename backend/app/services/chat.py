@@ -30,7 +30,7 @@ class ChatService:
         if not next_question:
             return [self.__create_message('The assessment is already over','bot')]
 
-        chat_history = self.__get_chat_history()
+        chat_history = self.get_chat_history()
         if not chat_history.messages:
             welcome_message = self.__create_message(
             """
@@ -50,8 +50,7 @@ class ChatService:
             question_one = self.__handle_question_response()
             return [welcome_message,*question_one]
         else:
-            message = self.__create_message("Resuming the Assessment", 'bot')
-            return [message, *self.__handle_question_response()]
+            return []
 
     # Processes Every message user sends
     async def handle_message(self, msg:MutableMapping[str, Any]) -> List[ChatMessage]:
@@ -73,6 +72,20 @@ class ChatService:
             bot_response = f"Assessment complete. Your score: {score_sheet.overall_score}, Your Level: {score_sheet.cefr_level}"
 
             return [self.__create_message(bot_response, 'bot'), self.__create_message(score_sheet.model_dump_json(), 'bot', 'sheet')]
+
+    # Retrieves the ChatHistory from redis if exit, it not it creates new one
+    def get_chat_history(self) -> ChatHistory:
+        chat_data = redis_client.get(f"chat_history_{self.user_id}")
+        chat_history = None
+        if chat_data:
+            chat_history = ChatHistory.model_validate_json(chat_data)
+        else:
+            chat_history = ChatHistory(
+                messages=[]
+            )
+            self.__save_chat_history(chat_history)
+
+        return chat_history
 
     # Edits the message (Only User Message)
     # Since user messages are usually answers, it will search for releated
@@ -105,9 +118,9 @@ class ChatService:
         # Answer the current question
         self.__set_new_answer(msg)
         # Create User Message
-        self.__create_message(msg, 'user')
+        user_message = self.__create_message(msg, 'user')
         # Respond with New Question
-        return self.__handle_question_response()
+        return [user_message, *self.__handle_question_response()]
 
     # Will convert the audio to transcript to save answer as text while
     #  Scoring the prouncation with separate service
@@ -146,19 +159,7 @@ class ChatService:
         except:
             return None
 
-    # Retrieves the ChatHistory from redis if exit, it not it creates new one
-    def __get_chat_history(self) -> ChatHistory:
-        chat_data = redis_client.get(f"chat_history_{self.user_id}")
-        chat_history = None
-        if chat_data:
-            chat_history = ChatHistory.model_validate_json(chat_data)
-        else:
-            chat_history = ChatHistory(
-                messages=[]
-            )
-            self.__save_chat_history(chat_history)
 
-        return chat_history
 
     #  Saves the chatHistory to Redis
     def __save_chat_history(self, chat_history: ChatHistory) -> bool:
@@ -221,7 +222,7 @@ class ChatService:
                 sender=sender,
                 type=msg_type
             )
-            chat_history = self.__get_chat_history()
+            chat_history = self.get_chat_history()
             chat_history.messages.append(message)
             self.__save_chat_history(chat_history)
             return message
@@ -231,7 +232,7 @@ class ChatService:
 
     # Searches for a ChatMessage through the ChatHistory
     def __retrieve_message(self, msg_id: str) -> ChatMessage:
-        messages = self.__get_chat_history().messages
+        messages = self.get_chat_history().messages
         for msg in messages:
             if msg.id == msg_id:
                 return msg
@@ -239,7 +240,7 @@ class ChatService:
 
     def __set_existing_message(self, msg_id: str, new_msg: ChatMessage, delete: bool = False) -> bool:
         try:
-            messages = self.__get_chat_history().messages
+            messages = self.get_chat_history().messages
             for msg in messages:
                 if msg.id == msg_id:
                     if delete:
