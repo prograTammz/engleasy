@@ -5,6 +5,7 @@ import "@/styles/global.css";
 import { AuthProvider } from "./contexts/auth";
 import ProtectedRoute from "./pages/ProtectedRoute";
 import { Toaster } from "./components/ui/toaster";
+import { ChatProvider } from "./contexts/chat";
 // Lazy Load the pages
 const Homepage = lazy(() => import("@/pages/Home"));
 const LoginPage = lazy(() => import("@/pages/Login"));
@@ -29,7 +30,9 @@ function App() {
                 path="app"
                 element={
                   <ProtectedRoute>
-                    <AppLayout />
+                    <ChatProvider>
+                      <AppLayout />
+                    </ChatProvider>
                   </ProtectedRoute>
                 }
               >
