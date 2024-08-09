@@ -43,6 +43,7 @@ const ScoreProgress: React.FC<ScoreProgressProps> = ({
         <div className="flex w-full justify-between">
           {Object.values(CEFR).map((level) => (
             <span
+              key={level}
               className={`font-bold text-lg mb-2 ${
                 cefr_level == level
                   ? "text-purple-600 dark:text-purple-500"
