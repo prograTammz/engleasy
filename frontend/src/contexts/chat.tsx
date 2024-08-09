@@ -3,6 +3,7 @@ import useSocket from "../hooks/useSocket";
 import { useAuth } from "./auth";
 import { ChatAction, ChatMessage, ChatState } from "@/models/chat";
 import { UserToken } from "@/models/user";
+import { getMessages } from "@/services/apiChat";
 
 const initialState: ChatState = {
   messages: [],
@@ -40,6 +41,7 @@ const chatReducer = (state: ChatState, action: ChatAction): ChatState => {
 
 const ChatContext = createContext<{
   messages: ChatMessage[];
+  initalizeChat: () => void;
   sendMessage: (message: ChatMessage) => void;
   editMessage: (id: string, text: string) => void;
   deleteMessage: (id: string) => void;
@@ -49,8 +51,11 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { userToken } = useAuth();
-  const { messages: socketMessages, sendMessage: socketSendMessage } =
-    useSocket("ws://your-websocket-url/ws", userToken as UserToken);
+  const {
+    messages: socketMessages,
+    openSocket,
+    sendMessage: socketSendMessage,
+  } = useSocket("ws://localhost:8000/chat/ws", userToken as UserToken);
   const [{ messages }, dispatch] = useReducer(chatReducer, initialState);
 
   useEffect(() => {
@@ -61,9 +66,15 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
     //To be implemented
   };
 
+  const initalizeChat = async () => {
+    openSocket();
+    const chatMessages = await getMessages(userToken!);
+    dispatch({ type: "SET_MESSAGES", payload: chatMessages.messages });
+  };
+
   const sendMessage = (message: ChatMessage) => {
     socketSendMessage(message);
-    dispatch({ type: "ADD_MESSAGE", payload: message });
+    // dispatch({ type: "ADD_MESSAGE", payload: message });
   };
 
   const editMessage = (id: string, text: string) => {
@@ -78,7 +89,13 @@ export const ChatProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <ChatContext.Provider
-      value={{ messages, sendMessage, editMessage, deleteMessage }}
+      value={{
+        messages,
+        initalizeChat,
+        sendMessage,
+        editMessage,
+        deleteMessage,
+      }}
     >
       {children}
     </ChatContext.Provider>
