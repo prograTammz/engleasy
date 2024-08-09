@@ -1,7 +1,9 @@
+import { ChatWindow } from "@/features/chat-widget/ChatWindow";
+
 export default function ScoreSheetPage() {
   return (
-    <main>
-      <h1>Chat Bot Page</h1>
-    </main>
+    <>
+      <ChatWindow />
+    </>
   );
 }
