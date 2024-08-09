@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
+  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,129 +15,46 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs } from "@/components/ui/tabs";
 import { TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
-import { VoiceRecorder } from "./VoiceRecorder";
+import { VoiceRecorder } from "../chat/VoiceRecorder";
 import { ChatBubble } from "../chat/ChatBubble";
 import { ChatSender, ChatType } from "@/models/chat";
 import { exampleSheet } from "@/models/score";
+import { useChat } from "@/contexts/chat";
+import { MessageArea } from "../chat/MessageArea";
+import { BotAvatar } from "../chat/BotAvatar";
 
 export const ChatWindow: React.FC = () => {
-  const [open, setOpen] = useState<boolean>(false);
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="secondary"> Open</Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <div className="flex justify-end w-full">
-            <Button variant="outline" size="icon" className="p-0">
-              <Cross2Icon className="h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex justify-center">
-            <div className="flex flex-col items-center gap-2">
-              <Avatar>
-                <AvatarImage
-                  src="https://api.dicebear.com/9.x/micah/svg?seed=Boo"
-                  alt="@Ava"
-                />
-                <AvatarFallback>Ava</AvatarFallback>
-              </Avatar>
-              <h2 className="font-bold">Hey 👋 I'm Ava</h2>
-              <p className="text-gray-500">
-                Ask me anything or pick a place to start
-              </p>
-            </div>
-          </div>
-        </DialogHeader>
-        {/* Body */}
-        <ScrollArea className="h-[400px] w-full">
-          <ChatBubble
-            chatMessage={{
-              id: "anything",
-              content: "hello",
-              type: ChatType.TEXT,
-              created: new Date(),
-              modified: new Date(),
-              is_modified: true,
-              sender: ChatSender.BOT,
-            }}
-          />
-          <ChatBubble
-            chatMessage={{
-              id: "anything",
-              content: JSON.stringify(exampleSheet),
-              type: ChatType.SHEET,
-              created: new Date(),
-              modified: new Date(),
-              is_modified: true,
-              sender: ChatSender.BOT,
-            }}
-          />
-          <ChatBubble
-            chatMessage={{
-              id: "anything",
-              content:
-                "https://engleasy.s3.eu-west-1.amazonaws.com/1222efe1-2cf4-442d-aec1-59f6086302cd.mp3",
-              type: ChatType.AUDIO,
-              created: new Date(),
-              modified: new Date(),
-              is_modified: true,
-              sender: ChatSender.BOT,
-            }}
-          />
-          <ChatBubble chatSender={ChatSender.BOT} isLoading={true} />
-          <ChatBubble chatSender={ChatSender.USER} isLoading={true} />
-        </ScrollArea>
+  const { messages, initalizeChat } = useChat();
 
-        {/* This is the footer */}
-        <Separator />
-        <DialogFooter>
-          <Tabs defaultValue="text" className="w-full">
-            <TabsList className="items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground grid w-full grid-cols-2 mb-4">
-              <TabsTrigger
-                value="text"
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow data-[state=inactive]:bg-muted"
-              >
-                Text
-              </TabsTrigger>
-              <TabsTrigger
-                value="audio"
-                className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow data-[state=inactive]:bg-muted"
-              >
-                Audio
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="text">
-              <div className="flex flex-col w-full gap-4">
-                <div className="flex w-full">
-                  <Avatar>
-                    <AvatarImage
-                      src="https://api.dicebear.com/9.x/micah/svg?seed=Oliver"
-                      alt="@Ava"
-                    />
-                    <AvatarFallback>Ava</AvatarFallback>
-                  </Avatar>
-                  <Textarea className="w-full" />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="icon" className="p-0">
-                    <PlayIcon />
-                    <span className="sr-only">Record a voice message</span>
-                  </Button>
-                  <Button variant="secondary" size="icon" className="p-0">
-                    <PaperPlaneIcon />
-                    <span className="sr-only">Send Message</span>
-                  </Button>
-                </div>
-              </div>
-            </TabsContent>
-            <TabsContent value="audio">
-              <VoiceRecorder />
-            </TabsContent>
-          </Tabs>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+  useEffect(() => {
+    initalizeChat();
+    return () => {
+      console.log("bye");
+    };
+  }, []);
+
+  useEffect(() => () => console.log("unmount"), []);
+
+  return (
+    <div className="w-full h-full max-w-screen-md flex flex-col justify-between gap-4">
+      <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <BotAvatar />
+          <h2 className="font-bold">Hey 👋 I'm Ava</h2>
+          <p className="text-gray-500">
+            Ask me anything or pick a place to start
+          </p>
+        </div>
+      </div>
+      {/* Body */}
+      <ScrollArea className="h-[400px] w-full shadow-background shadow-inner bg-muted flex-grow px-2 rounded-lg">
+        {messages &&
+          messages.map((message) => {
+            return <ChatBubble key={message.id} chatMessage={message} />;
+          })}
+      </ScrollArea>
+
+      <MessageArea />
+    </div>
   );
 };
