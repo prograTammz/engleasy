@@ -43,8 +43,13 @@ const NavigationRoutes: React.FC = () => {
       {routes.map((route) => {
         return (
           <NavLink
+            key={route.name}
             to={route.url}
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+            className={({ isActive }) => {
+              return isActive
+                ? "flex items-center gap-3 rounded-lg bg-muted px-3 py-2 text-primary transition-all hover:text-primary"
+                : "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary";
+            }}
           >
             <route.icon className="h-4 w-4" />
             <span className="capitalize">{route.name}</span>
@@ -127,7 +132,7 @@ const AppLayout: React.FC = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           </header>
-          <main className="p-4 lg:p-6 max-w-screen-lg m-auto overflow-y-scroll h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-60px)] no-scrollbar">
+          <main className="p-4 lg:p-6 max-w-screen-lg w-full m-auto overflow-y-scroll h-[calc(100vh-3.5rem)] lg:h-[calc(100vh-60px)] no-scrollbar">
             <Outlet />
           </main>
         </div>
