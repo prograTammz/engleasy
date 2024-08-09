@@ -38,6 +38,7 @@ const authReducer = (state: State, action: Action): State => {
         ...state,
         isAuthenticated: action.payload.isAuthenticated,
         user: action.payload.user,
+        userToken: action.payload.userToken,
         isInitialized: true,
       };
     default:
@@ -60,7 +61,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     const initialize = async (): Promise<void> => {
       try {
         const userToken = getItem();
-
         if (userToken) {
           const user = await apiAuth.me(userToken);
           navigate("/app");
@@ -69,6 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             payload: {
               isAuthenticated: true,
               user: user,
+              userToken,
             },
           });
         } else {
@@ -77,11 +78,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             payload: {
               isAuthenticated: false,
               user: null,
+              userToken: null,
             },
           });
         }
       } catch (error: unknown) {
-        console.log(error);
         const message = (error as Error).message;
         toast({
           title: "Authentication Error",
@@ -93,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           payload: {
             isAuthenticated: false,
             user: null,
+            userToken: null,
           },
         });
       }
