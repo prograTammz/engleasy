@@ -43,7 +43,6 @@ export default function LoginPage() {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     login(values.email, values.password);
-    console.log(isAuthenticated);
   }
 
   return (

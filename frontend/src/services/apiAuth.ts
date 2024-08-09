@@ -56,7 +56,6 @@ async function me(userToken: UserToken): Promise<User> {
     }
     return await res.json();
   } catch (error: unknown) {
-    console.log(error);
     const message = (error as Error).message;
     throw new Error(message ?? "Register has failed successfully!");
   }

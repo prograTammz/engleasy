@@ -49,7 +49,6 @@ export default function RegisterPage() {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     register(values.email, values.name, values.password);
-    console.log(isAuthenticated);
   }
 
   return (
