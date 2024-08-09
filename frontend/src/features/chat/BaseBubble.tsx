@@ -48,11 +48,11 @@ export const BaseBubble: React.FC<BaseBubbleProps> = ({
             )}
 
             {chatMessage.sender === ChatSender.BOT ? (
-              <div className="bg-gray-200 dark:bg-gray-700 p-3 rounded-3xl rounded-tl-none">
+              <div className="bg-gray-200 dark:bg-gray-700 p-3 rounded-3xl rounded-tl-none max-w-[300px]">
                 {children}
               </div>
             ) : (
-              <div className="bg-purple-600 dark:bg-purple-200 p-3 rounded-3xl rounded-tr-none text-white dark:text-black">
+              <div className="bg-purple-600 dark:bg-purple-200 p-3 rounded-3xl rounded-tr-none text-white dark:text-black max-w-[300px]">
                 {children}
               </div>
             )}
@@ -75,7 +75,6 @@ export const BaseBubble: React.FC<BaseBubbleProps> = ({
 
 function formatDate(date: Date): string {
   date = new Date(date);
-  console.log(date);
   const day = date.getDay();
   const month = date.getMonth();
   const year = date.getFullYear();

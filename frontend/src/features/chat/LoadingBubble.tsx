@@ -24,7 +24,7 @@ export const LoadingBubble: React.FC<LoadingBubbleProps> = ({ chatSender }) => {
             </Avatar>
           )}
           {chatSender === ChatSender.BOT ? (
-            <div className=" bg-gray-200 dark:bg-gray-700 p-4 rounded-3xl rounded-tl-none w-72">
+            <div className=" bg-gray-200 dark:bg-gray-700 p-4 rounded-3xl rounded-tl-none max-w-48">
               <div className="flex flex-col gap-2 animate-pulse">
                 <div className="rounded-full bg-slate-600 h-2"></div>
                 <div className="rounded-full bg-slate-600  h-2"></div>

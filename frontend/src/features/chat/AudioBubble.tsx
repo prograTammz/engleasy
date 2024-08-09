@@ -30,7 +30,7 @@ export const AudioBubble: React.FC<AudioBubbleProps> = ({ chatMessage }) => {
               <AudioVisualizer
                 ref={visualizerRef}
                 blob={blob}
-                width={300}
+                width={200}
                 height={50}
                 barWidth={1}
                 gap={0}
