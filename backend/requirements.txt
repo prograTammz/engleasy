@@ -1,6 +1,6 @@
 fastapi
 fastapi-cors
-uvicorn
+uvicorn[standard]
 pydantic
 email-validator
 pydantic[email]
