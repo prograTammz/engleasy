@@ -19,15 +19,15 @@ s3_client = boto3.client(
     region_name=AWS_S3_REGION_NAME
 )
 
-async def upload_audio_s3(file, audio_data) -> str:
+async def upload_audio_s3(audio_data: BytesIO) -> str:
     try:
+        audio_data.seek(0)
         # Generate a random filename using UUID
-        file_extension = file.filename.split('.')[-1]
-        random_filename = f"{uuid.uuid4()}.{file_extension}"
+        file_name = f"{uuid.uuid4()}.mp3"
 
         # Upload the file to S3
-        s3_client.upload_fileobj(BytesIO(audio_data), AWS_STORAGE_BUCKET_NAME, random_filename)
+        s3_client.put_object(Body=audio_data, Bucket=AWS_STORAGE_BUCKET_NAME, Key=file_name,  ContentType='audio/mpeg')
 
-        return  f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{random_filename}"
+        return  f"https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}"
     except Exception as e:
             return {"error from aws": str(e)}
