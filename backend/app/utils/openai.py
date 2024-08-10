@@ -6,7 +6,8 @@ def base64_to_bytesio(base64_audio: str) -> BytesIO:
     Converts a base64-encoded audio string into a BytesIO object.
     """
     # Step 1: Remove the "data:audio/mp3;base64," prefix if it's there
-    base64_audio = base64_audio[1:-1]
+    if base64_audio.startswith('"') and base64_audio.endswith('"'):
+        base64_audio = base64_audio[1:-1]
     if base64_audio.startswith("data:audio/mp3;base64,"):
         base64_audio = base64_audio.split(",")[1]
 
