@@ -30,11 +30,12 @@ class ChatService:
 
     async def get_opening_message(self) -> List[ChatMessage]:
         next_question = self.__get_next_question()
+        chat_history = self.get_chat_history()
 
         if not next_question:
-            return [self.__create_message('The assessment is already over','bot')]
+            await self.__delete_redis_keys()
+            return await self.get_opening_message()
 
-        chat_history = self.get_chat_history()
         if not chat_history.messages:
             welcome_message = self.__create_message(
             """
@@ -53,8 +54,8 @@ class ChatService:
             """, 'bot')
             question_one = await self.__handle_question_response()
             return [welcome_message, *question_one]
-        else:
-            return []
+
+        return []
 
     # Processes Every message user sends
     async def handle_message(self, msg:MutableMapping[str, Any]) -> List[ChatMessage]:
