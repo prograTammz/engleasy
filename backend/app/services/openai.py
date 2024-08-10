@@ -1,4 +1,5 @@
 from openai import OpenAI
+from io import BytesIO
 
 client = OpenAI()
 
@@ -15,3 +16,23 @@ async def create_gpt_completion(prompt: str) -> str:
     )
 
     return response.choices[0].message.content
+
+async def text_to_speech(text: str) -> BytesIO:
+    # Initialize a BytesIO buffer
+    audio_data = BytesIO()
+
+    # Call the OpenAI API to generate speech from text
+    with client.audio.speech.with_streaming_response.create(
+        model="tts-1",
+        voice="alloy",
+        input=text,
+        response_format="mp3"
+    ) as response:
+        for chunk in response.iter_bytes(1024):
+            audio_data.write(chunk)
+
+    audio_data.seek(0)
+
+    return audio_data
+
+
