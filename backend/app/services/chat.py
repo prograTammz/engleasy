@@ -10,8 +10,10 @@ from app.models.score import EnglishScoreSheet
 # Services
 from app.services.scores import save_score
 from app.services.assessment import generate_score_sheet, generate_questionnaire
+from app.services.openai import text_to_speech
 # Utilities
 from app.utils.redis_client import redis_client
+from app.utils.bucket_storage import upload_audio_s3
 
 class ChatService:
     # Takes the user_id after openning connection and authenticating
@@ -47,8 +49,8 @@ class ChatService:
 
                 Your answer for writting question must be text message!
             """, 'bot')
-            question_one = self.__handle_question_response()
-            return [welcome_message,*question_one]
+            question_one = await self.__handle_question_response()
+            return [welcome_message, *question_one]
         else:
             return []
 
@@ -120,7 +122,8 @@ class ChatService:
         # Create User Message
         user_message = self.__create_message(msg, 'user')
         # Respond with New Question
-        return [user_message, *self.__handle_question_response()]
+        responses = await self.__handle_question_response()
+        return [user_message, responses]
 
     # Will convert the audio to transcript to save answer as text while
     #  Scoring the prouncation with separate service
@@ -129,7 +132,7 @@ class ChatService:
 
     # Returns a message with next question and adds extra content if needed
     # wether if it's text or audio
-    def __handle_question_response(self) -> List[ChatMessage]:
+    async def __handle_question_response(self) -> List[ChatMessage]:
         next_question = self.__get_next_question()
         responses = []
         responses.append(self.__create_message(next_question.question, 'bot'))
@@ -138,12 +141,11 @@ class ChatService:
         bot_response_2 = None
         if next_question.type == 'reading':
             bot_response_2 = next_question.text_content
+            responses.append(self.__create_message(bot_response_2, 'bot', 'text'))
         if next_question.type == 'listening':
             transcript = next_question.audio_content
-            # TODO: Upload Audio to AWS
-            # TODO: Generate Audio from transcript
-            # TODO: Create an Audio bot message
-        if bot_response_2:
+            audio_data = await text_to_speech(transcript)
+            bot_response_2 = await upload_audio_s3(audio_data)
             responses.append(self.__create_message(bot_response_2, 'bot', 'audio'))
 
         return responses
@@ -160,7 +162,6 @@ class ChatService:
             return score_sheet
         except:
             return None
-
 
 
     #  Saves the chatHistory to Redis
