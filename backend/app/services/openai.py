@@ -35,4 +35,16 @@ async def text_to_speech(text: str) -> BytesIO:
 
     return audio_data
 
+def speech_to_text(buffer: BytesIO) -> str:
+    # Read file content
+    buffer.seek(0)
+    buffer.name = "file.mp3"
 
+    transcript = client.audio.transcriptions.create(
+        model="whisper-1",
+        file=buffer,
+        language="en",
+        response_format="text"
+    )
+
+    return transcript
