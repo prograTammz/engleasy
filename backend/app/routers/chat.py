@@ -26,17 +26,19 @@ async def websocket_endpoint(websocket: WebSocket):
     await chat_service.setup()
 
     try:
-        opening_messages = chat_service.get_opening_message()
+        opening_messages = await chat_service.get_opening_message()
 
         for message in opening_messages:
-                await websocket.send_json(message.model_dump_json())
+                await websocket.send_text(message.model_dump_json())
 
         while True:
-            data = await websocket.receive()
-            responses = await chat_service.handle_message(data)
+            message = await websocket.receive_text()
+
+
+            responses = await chat_service.handle_message(message)
 
             for response in responses:
-                await websocket.send_json(response.model_dump_json())
+                await websocket.send_text(response.model_dump_json())
 
 
     except WebSocketDisconnect:
