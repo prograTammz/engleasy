@@ -1,13 +1,17 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Literal
+from datetime import datetime, timezone
 
 """
-The scores are based on EnglishScore system by the British Council
-provides a standardized way to measure English proficiency,
+The scores are based on the EnglishScore system by the British Council.
+It provides a standardized way to measure English proficiency,
 often used in conjunction with the CEFR level.
 """
+
 class WritingScores(BaseModel):
     """
+    Represents the writing assessment scores.
+
     Task Achievement/Response:
        - Measures how well the test taker addresses the task requirements.
     Coherence and Cohesion:
@@ -21,62 +25,101 @@ class WritingScores(BaseModel):
     coherence_and_cohesion: int = Field(..., ge=0, le=20)
     lexical_resource: int = Field(..., ge=0, le=20)
     grammatical_range_and_accuracy: int = Field(..., ge=0, le=20)
-    total: float = Field(..., ge=0, le=80)
+    total: int = Field(ge=0, le=80)
+
+    @model_validator(mode="before")
+    def calculate_total(cls, values):
+        values['total'] = values['task_achievement'] + values['coherence_and_cohesion'] + values['lexical_resource'] + values['grammatical_range_and_accuracy']
+        return values
 
 class SpeakingScores(BaseModel):
     """
-        Fluency and Coherence:
-           - Measures the smoothness and logical flow of speech.
-        Pronunciation:
-            - Evaluates clarity and accuracy of pronunciation.
-            - **Evaluated Programmatically by comparison
-        Lexical Resource:
-            - Looks at the range and appropriateness of vocabulary used.
-        Grammatical Range and Accuracy:
-            - Assesses the use of grammar.
+    Represents the speaking assessment scores.
+
+    Fluency and Coherence:
+       - Measures the smoothness and logical flow of speech.
+    Pronunciation:
+       - Evaluates clarity and accuracy of pronunciation.
+       - **Evaluated Programmatically by comparison
+    Lexical Resource:
+       - Looks at the range and appropriateness of vocabulary used.
+    Grammatical Range and Accuracy:
+       - Assesses the use of grammar.
     """
     fluency_and_coherence: int = Field(..., ge=0, le=20)
     pronunciation: int = Field(..., ge=0, le=20)
     lexical_resource: int = Field(..., ge=0, le=20)
     grammatical_range_and_accuracy: int = Field(..., ge=0, le=20)
-    total: int = Field(..., ge=0, le=80)
+    total: int = Field(ge=0, le=80)
+
+    @model_validator(mode="before")
+    def calculate_total(cls, values):
+        values['total'] = values['fluency_and_coherence'] + values['pronunciation'] + values['lexical_resource'] + values['grammatical_range_and_accuracy']
+        return values
 
 class ReadingScores(BaseModel):
     """
-        Understanding Main Ideas:
-           - Ability to grasp the main points of a text.
-        Understanding Details:
-            - Ability to comprehend specific details in the text.
-        Inference:
-            - Ability to make logical inferences based on the text.
-        Lexical Resource:
-            - Ability to understand and use vocabulary.
+    Represents the reading assessment scores.
+
+    Understanding Main Ideas:
+       - Ability to grasp the main points of a text.
+    Understanding Details:
+       - Ability to comprehend specific details in the text.
+    Inference:
+       - Ability to make logical inferences based on the text.
+    Lexical Resource:
+       - Ability to understand and use vocabulary.
     """
     understanding_main_ideas: int = Field(..., ge=0, le=20)
     understanding_details: int = Field(..., ge=0, le=20)
     inference: int = Field(..., ge=0, le=20)
     lexical_resource: int = Field(..., ge=0, le=20)
-    total: int = Field(..., ge=0, le=80)
+    total: int = Field(ge=0, le=80)
+
+    @model_validator(mode="before")
+    def calculate_total(cls, values):
+        values['total'] = values['understanding_main_ideas'] + values['understanding_details'] + values['inference'] + values['lexical_resource']
+        return values
 
 class ListeningScores(BaseModel):
     """
-        TODO: Add the Listening Criteria
+    Represents the listening assessment scores.
+
+    Understanding Main Ideas:
+       - Ability to grasp the main points of spoken content.
+    Understanding Details:
+       - Ability to comprehend specific details in the spoken content.
+    Inference:
+       - Ability to make logical inferences based on spoken content.
+    Lexical Resource:
+       - Ability to understand and use vocabulary.
     """
     understanding_main_ideas: int = Field(..., ge=0, le=20)
     understanding_details: int = Field(..., ge=0, le=20)
     inference: int = Field(..., ge=0, le=20)
     lexical_resource: int = Field(..., ge=0, le=20)
-    total: int = Field(..., ge=0, le=80)
+    total: int = Field(ge=0, le=80)
 
-"""
-    ScoreSheet after assessing it, should be presenting by graph
-"""
+    @model_validator(mode="before")
+    def calculate_total(cls, values):
+        values['total'] = values['understanding_main_ideas'] + values['understanding_details'] + values['inference'] + values['lexical_resource']
+        return values
+
+
 class EnglishScoreSheet(BaseModel):
+    """
+    Represents the overall score sheet for an English assessment.
+    """
     user_id: str = Field(...)
-    test_date: str = Field(...)
+    test_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="The date and time when the test was taken.")
     writing: WritingScores = Field(...)
     speaking: SpeakingScores = Field(...)
     reading: ReadingScores = Field(...)
     listening: ListeningScores = Field(...)
-    overall_score: int = Field(..., ge=0, le=320)
+    overall_score: int = Field(ge=0, le=320)
     cefr_level: Literal['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] = Field(...)
+
+    @model_validator(mode="before")
+    def calculate_overall_score(cls, values):
+        values['overall_score'] = values['writing'].total + values['speaking'].total + values['reading'].total + values['listening'].total
+        return values
