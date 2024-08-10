@@ -8,3 +8,9 @@ redis_client = redis.Redis(
     db=0,
     decode_responses=True
 )
+
+# Error handling for redis_client
+try:
+    redis_client.ping()
+except redis.exceptions.ConnectionError as e:
+    raise RuntimeError(f"Failed to connect to Redis: {str(e)}")
