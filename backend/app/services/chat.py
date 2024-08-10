@@ -60,23 +60,19 @@ class ChatService:
     # Processes Every message user sends
     async def handle_message(self, msg:MutableMapping[str, Any]) -> List[ChatMessage]:
         next_question = self.__get_next_question()
+        chat_history = self.get_chat_history()
 
+        if not chat_history:
+            return []
         # If there are questions not answerred
         if next_question:
             msg_type = self.__check_message_type(msg)
             if msg_type == 'text':
-                msg = self.__cast_message_text(msg)
-                return self.__handle_text_message(msg)
+                return await self.__handle_text_message(msg)
             else:
-                msg = self.__cast_message_blob(msg)
                 return await self.__handle_blob_message(msg)
 
-        # If it's Done
-        else:
-            score_sheet = await self.__complete_assessment()
-            bot_response = f"Assessment complete. Your score: {score_sheet.overall_score}, Your Level: {score_sheet.cefr_level}"
-
-            return [self.__create_message(bot_response, 'bot'), self.__create_message(score_sheet.model_dump_json(), 'bot', 'sheet')]
+        return [self.__create_message(msg_type, 'bot')]
 
     # Retrieves the ChatHistory from redis if exit, it not it creates new one
     def get_chat_history(self) -> ChatHistory:
@@ -211,14 +207,6 @@ class ChatService:
             return 'blob'
         else:
             return 'text'
-
-    # Casts the message to Bytes
-    def __cast_message_blob(self, msg:MutableMapping[str, Any]) -> bytes:
-        return cast(bytes, msg["bytes"])
-
-    # Casts the message to text
-    def __cast_message_text(self, msg:MutableMapping[str, Any]) -> str:
-        return cast(str, msg['text'])
 
 
     # Starts assessment session either by creating a questionnaire through
