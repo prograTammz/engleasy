@@ -275,3 +275,10 @@ class ChatService:
         except:
             return False
 
+    # Deletes the Redis keys for Questionaire & Chat History
+    async def __delete_redis_keys(self):
+        try:
+            redis_client.delete(f"questionnaire_{self.user_id}")
+            redis_client.delete(f"chat_history_{self.user_id}")
+        except Exception as e:
+            print(f"Failed to delete Redis keys: {str(e)}")
