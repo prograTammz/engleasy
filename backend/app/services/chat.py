@@ -3,6 +3,7 @@ from fastapi import WebSocket
 from typing import Any, Literal, List, cast, MutableMapping
 from uuid import uuid4
 from datetime import datetime, timezone
+import asyncio
 # Models
 from app.models.assessment import Questionnaire, Question
 from app.models.chat import ChatMessage, ChatHistory
@@ -144,7 +145,12 @@ class ChatService:
     # wether if it's text or audio
     async def __handle_question_response(self) -> List[ChatMessage]:
         next_question = self.__get_next_question()
+
+        if not next_question:
+            return await self.__handle_final_question()
+
         responses = []
+
         responses.append(self.__create_message(next_question.question, 'bot'))
 
         # Additional Response
@@ -160,6 +166,18 @@ class ChatService:
 
         return responses
 
+    # Handles the case when the the questions are answered and clear the redis keys
+    async def __handle_final_question(self) -> List[ChatMessage] :
+        score_sheet = await self.__complete_assessment()
+        bot_response = f"Assessment complete. Your score: {score_sheet.overall_score}, Your Level: {score_sheet.cefr_level}"
+        bot_response = self.__create_message(bot_response, 'bot')
+
+        score_response = self.__create_message(score_sheet.model_dump_json(), 'bot', 'sheet')
+
+        # Schedule Redis deletions asynchronously
+        asyncio.create_task(self.__delete_redis_keys())
+
+        return [bot_response, score_response]
 
     # Comepletes the assessment by scoring and saving the score
     # and deleting the questionnaire & chat history
