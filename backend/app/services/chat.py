@@ -127,6 +127,8 @@ class ChatService:
     def __handle_blob_message(self, msg: bytes) -> List[ChatMessage]:
         return [self.__create_message('Not ready yet', 'bot')]
 
+    # Returns a message with next question and adds extra content if needed
+    # wether if it's text or audio
     def __handle_question_response(self) -> List[ChatMessage]:
         next_question = self.__get_next_question()
         responses = []
@@ -238,6 +240,7 @@ class ChatService:
                 return msg
         return None
 
+    # Edits or deletes and existing messages used by PUT & DELETE
     def __set_existing_message(self, msg_id: str, new_msg: ChatMessage, delete: bool = False) -> bool:
         try:
             messages = self.get_chat_history().messages
@@ -259,6 +262,7 @@ class ChatService:
                 return self.__save_questionnaire()
         return False
 
+    # Loops over questions and set then answer to first unansered one
     def __set_new_answer(self, answer: str) -> bool:
         for question in self.questionnaire.questions:
             if question.answer is None:
@@ -266,7 +270,7 @@ class ChatService:
                 return self.__save_questionnaire()
         return False
 
-
+    # Saves the questionaire to the redis after turning it to JSON
     def __save_questionnaire(self) -> bool:
         try:
             questionnaire_data = self.questionnaire.model_dump_json()
