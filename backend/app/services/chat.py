@@ -122,7 +122,7 @@ class ChatService:
         user_message = self.__create_message(msg, 'user')
         # Respond with New Question
         responses = await self.__handle_question_response()
-        return [user_message, responses]
+        return [user_message, *responses]
 
     # Will convert the audio to transcript to save answer as text while
     #  Scoring the prouncation with separate service
