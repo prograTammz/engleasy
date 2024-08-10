@@ -10,10 +10,11 @@ from app.models.score import EnglishScoreSheet
 # Services
 from app.services.scores import save_score
 from app.services.assessment import generate_score_sheet, generate_questionnaire
-from app.services.openai import text_to_speech
+from app.services.openai import text_to_speech, speech_to_text
 # Utilities
 from app.utils.redis_client import redis_client
 from app.utils.bucket_storage import upload_audio_s3
+from app.utils.openai import base64_to_bytesio
 
 class ChatService:
     # Takes the user_id after openning connection and authenticating
@@ -26,7 +27,7 @@ class ChatService:
     async def setup(self):
         await self.__start_assessment()
 
-    def get_opening_message(self) -> List[ChatMessage]:
+    async def get_opening_message(self) -> List[ChatMessage]:
         next_question = self.__get_next_question()
 
         if not next_question:
@@ -66,7 +67,7 @@ class ChatService:
                 return self.__handle_text_message(msg)
             else:
                 msg = self.__cast_message_blob(msg)
-                return self.__handle_blob_message(msg)
+                return await self.__handle_blob_message(msg)
 
         # If it's Done
         else:
@@ -116,7 +117,7 @@ class ChatService:
 
 
     # Saves the answer to questionnaire
-    def __handle_text_message(self, msg: str) -> List[ChatMessage]:
+    async def __handle_text_message(self, msg: str) -> List[ChatMessage]:
         # Answer the current question
         self.__set_new_answer(msg)
         # Create User Message
@@ -127,8 +128,17 @@ class ChatService:
 
     # Will convert the audio to transcript to save answer as text while
     #  Scoring the prouncation with separate service
-    def __handle_blob_message(self, msg: bytes) -> List[ChatMessage]:
-        return [self.__create_message('Not ready yet', 'bot')]
+    async def __handle_blob_message(self, msg: str) -> List[ChatMessage]:
+        audio_bytes = base64_to_bytesio(msg)
+        transcript = speech_to_text(audio_bytes)
+        file_url = await upload_audio_s3(audio_bytes)
+        # Answer the current question
+        self.__set_new_answer(transcript)
+        # Create User Message
+        user_message = self.__create_message(file_url, 'user','audio')
+        # Respond with New Question
+        responses = await self.__handle_question_response()
+        return [user_message, *responses]
 
     # Returns a message with next question and adds extra content if needed
     # wether if it's text or audio
