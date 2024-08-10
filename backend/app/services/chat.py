@@ -200,7 +200,7 @@ class ChatService:
     # Check the message type if it's text or blob to process the message
     # accordingly
     def __check_message_type(self, msg:MutableMapping[str, Any]) -> Literal['text', 'blob']:
-        if msg['text'].startswith("data:audio/mp3;"):
+        if msg.startswith('"data:audio/mp3;base64'):
             return 'blob'
         else:
             return 'text'
