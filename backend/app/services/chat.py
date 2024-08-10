@@ -177,13 +177,10 @@ class ChatService:
         return [bot_response, score_response]
 
     # Comepletes the assessment by scoring and saving the score
-    # and deleting the questionnaire & chat history
     async def __complete_assessment(self) -> EnglishScoreSheet:
         try:
             score_sheet = await generate_score_sheet(self.questionnaire, self.user_id)
-            save_score(score_sheet)
-            redis_client.delete(f"questionnaire_{self.user_id}")
-            redis_client.delete(f"chat_history_{self.user_id}")
+            await save_score(score_sheet)
             return score_sheet
         except:
             return None
