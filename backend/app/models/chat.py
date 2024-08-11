@@ -7,7 +7,7 @@ class ChatMessage(BaseModel):
     """
     Represents a single chat message in the chat history.
     """
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="The unique identifier for the chat message.")
+    id: str = Field(default_factory=lambda: str(uuid4()), description="The unique identifier for the chat message.")
     content: str = Field(..., description="The content of the message.")
     type: Literal['text', 'audio', 'sheet'] = Field(..., description="The type of the message content.")
     created: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc), description="The timestamp when the message was created.")
