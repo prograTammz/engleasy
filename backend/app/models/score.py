@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, model_validator
 from typing import Literal
 from datetime import datetime, timezone
+from uuid import uuid4
 
 """
 The scores are based on the EnglishScore system by the British Council.
@@ -110,6 +111,7 @@ class EnglishScoreSheet(BaseModel):
     """
     Represents the overall score sheet for an English assessment.
     """
+    id: str = Field(default_factory=lambda: str(uuid4()), description="Unique identifier for the scoresheet.")
     user_id: str = Field(...)
     test_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="The date and time when the test was taken.")
     writing: WritingScores = Field(...)
@@ -121,5 +123,6 @@ class EnglishScoreSheet(BaseModel):
 
     @model_validator(mode="before")
     def calculate_overall_score(cls, values):
-        values['overall_score'] = values['writing'].total + values['speaking'].total + values['reading'].total + values['listening'].total
+        # Access the total directly from the dictionaries
+        values['overall_score'] = values['writing']['total'] + values['speaking']['total'] + values['reading']['total'] + values['listening']['total']
         return values
