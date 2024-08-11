@@ -41,8 +41,7 @@ class ChatService:
         chat_history = self.get_chat_history()
 
         if not next_question:
-            await self.__delete_redis_keys()
-            return await self.get_opening_message()
+            await self.__handle_final_question()
 
         if not chat_history.messages:
             welcome_message = self.__create_message(
