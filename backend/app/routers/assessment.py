@@ -57,11 +57,10 @@ async def submit_questionnaire(questionnaire: Questionnaire, current_user: User 
     """
     try:
         user_id = current_user.id
-        score_sheet = await generate_score_sheet(questionnaire.model_dump_json(), user_id)
-        score_id = await save_score(score_sheet)
+        score_sheet = await generate_score_sheet(questionnaire, user_id)
+        await save_score(score_sheet)
         redis_client.delete(f"questionnaire_{user_id}")
-        await users_collection.update_one({"_id": ObjectId(user_id)}, {"$set": {"on_progress_test": False}})
-        return {"score_id": score_id, "score": score_sheet}
+        return {"score_id": score_sheet.id, "score": score_sheet}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to submit questionnaire: {str(e)}")
 
