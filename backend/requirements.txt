@@ -1,7 +1,7 @@
 fastapi
 fastapi-cors
 uvicorn[standard]
-pydantic
+pydantic==2.8.2
 email-validator
 pydantic[email]
 python-multipart
@@ -12,3 +12,8 @@ uuid
 redis
 pyjwt
 passlib
+pytest
+pytest-mock
+pytest-cov
+pytest-asyncio
+python-dotenv
