@@ -20,7 +20,7 @@ class Question(BaseModel):
         audio_content = values.get('audio_content')
         audio_url = values.get('audio_url')
 
-        if content_type == 'text' and not text_content:
+        if type == 'reading' and not text_content:
             raise ValueError('text_content must be provided for text questions')
         if content_type == 'audio' and (not audio_content or not audio_url):
             raise ValueError('audio_content and audio_url must be provided for audio questions')
