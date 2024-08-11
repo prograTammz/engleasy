@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
 from app.routers.auth import get_current_user
 from app.models.user import User
+from app.models.score import EnglishScoreSheet
 from app.services.scores import (
     get_all_scores,
     get_score_by_id,
@@ -9,7 +11,7 @@ from app.services.scores import (
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("/" , response_model=List[EnglishScoreSheet])
 async def get_scores(current_user: User = Depends(get_current_user)) -> list:
     """
     Retrieves all English scores for the current user.
@@ -24,8 +26,8 @@ async def get_scores(current_user: User = Depends(get_current_user)) -> list:
     scores = await get_all_scores(user_id)
     return scores
 
-@router.get("/{score_id}")
-async def get_score(score_id: str, current_user: User = Depends(get_current_user)) -> dict:
+@router.get("/{score_id}" , response_model=EnglishScoreSheet)
+async def get_score(score_id: str, current_user: User = Depends(get_current_user)) -> EnglishScoreSheet:
     """
     Retrieves a specific English score by its ID.
 
@@ -45,7 +47,7 @@ async def get_score(score_id: str, current_user: User = Depends(get_current_user
     return score
 
 @router.delete("/{score_id}")
-async def delete_score(score_id: str, current_user: User = Depends(get_current_user)) -> dict:
+async def delete_score(score_id: str, current_user: User = Depends(get_current_user)) -> bool:
     """
     Deletes a specific English score by its ID.
 
