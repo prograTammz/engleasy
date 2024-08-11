@@ -1,10 +1,10 @@
 from app.models.score import EnglishScoreSheet
 from bson import ObjectId
 from app.utils.mongo_client import scores_collection
-from typing import List, Optional
+from typing import List
 
 # Saves EnglishScoreSheet to database
-async def save_score(score_sheet: EnglishScoreSheet) -> str:
+async def save_score(score_sheet: EnglishScoreSheet) -> bool:
     """
     Saves an EnglishScoreSheet to the database.
 
@@ -19,12 +19,12 @@ async def save_score(score_sheet: EnglishScoreSheet) -> str:
     """
     try:
         result = await scores_collection.insert_one(score_sheet.model_dump())
-        return str(result.inserted_id)
+        return result.acknowledged
     except Exception as e:
         raise Exception(f"Failed to save score: {str(e)}")
 
 # Retrieves all the EnglishScores of the user
-async def get_all_scores(user_id: str) -> List[dict]:
+async def get_all_scores(user_id: str) -> List[EnglishScoreSheet]:
     """
     Retrieves all English scores for a given user.
 
@@ -34,19 +34,16 @@ async def get_all_scores(user_id: str) -> List[dict]:
     Returns:
         List[dict]: A list of score sheets.
     """
-    score_sheets = []
     try:
+        score_sheets = []
         async for score_sheet in scores_collection.find({"user_id": user_id}):
-            score_dict = EnglishScoreSheet.model_validate(score_sheet).model_dump()
-            score_dict['id'] = str(score_sheet['_id'])
-            score_sheets.append(score_dict)
+            score_sheets.append(EnglishScoreSheet.model_validate(score_sheet))
+        return score_sheets
     except Exception as e:
         raise Exception(f"Failed to retrieve all scores: {str(e)}")
 
-    return score_sheets
-
 # Retrieves single EnglishScore by ID
-async def get_score_by_id(score_id: str) -> Optional[dict]:
+async def get_score_by_id(score_id: str) -> EnglishScoreSheet:
     """
     Retrieves a single English score by its ID.
 
@@ -57,11 +54,9 @@ async def get_score_by_id(score_id: str) -> Optional[dict]:
         Optional[dict]: The score sheet if found, None otherwise.
     """
     try:
-        score_sheet = await scores_collection.find_one({"_id": ObjectId(score_id)})
+        score_sheet = await scores_collection.find_one({"id": score_id})
         if score_sheet:
-            score_dict = EnglishScoreSheet.model_validate(score_sheet).model_dump()
-            score_dict['id'] = str(score_sheet['_id'])
-            return score_dict
+            return EnglishScoreSheet.model_validate(score_sheet)
         return None
     except Exception as e:
         raise Exception(f"Failed to retrieve score by ID: {str(e)}")
