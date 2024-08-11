@@ -1,12 +1,11 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional
 import uuid
 
 class UserBase(BaseModel):
     """
     Base model for a user, containing common fields.
     """
-    id: Optional[str] = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the user.")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique identifier for the user.")
     email: EmailStr = Field(..., description="The email address of the user.")
     name: str = Field(..., description="The name of the user.")
 
