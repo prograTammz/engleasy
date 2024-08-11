@@ -100,20 +100,21 @@ class ChatService:
     # Edits the message (Only User Message)
     # Since user messages are usually answers, it will search for related
     # message to the question and modifies it.
-    def edit_message(self, msg_id: str, msg_text: str) -> bool:
+    def edit_message(self, msg_id: str, new_text: str) -> ChatMessage:
         try:
             message = self.__retrieve_message(msg_id)
             if not message:
                 return False
             # Update message
-            message.content = msg_text
+            old_text = message.content
+            message.content = new_text
             message.is_modified = True
             message.modified = datetime.now(timezone.utc)
             # Save new History
             self.__set_existing_message(msg_id, message)
             # Update Questionnaire
-            self.__set_existing_answer(msg_text)
-            return True
+            self.__set_existing_answer(old_text, new_text)
+            return message
         except Exception as e:
             logger.error(f"Failed to edit message: {str(e)}")
             return False
@@ -301,12 +302,12 @@ class ChatService:
     def __set_existing_message(self, msg_id: str, new_msg: ChatMessage, delete: bool = False) -> bool:
         try:
             messages = self.get_chat_history().messages
-            for msg in messages:
+            for i, msg in enumerate(messages):
                 if msg.id == msg_id:
                     if delete:
-                        del msg
+                        del messages[i]
                     else:
-                        msg = new_msg
+                        messages[i] = new_msg
             return self.__save_chat_history(ChatHistory(messages=messages))
         except Exception as e:
             logger.error(f"Failed to set existing message: {str(e)}")
