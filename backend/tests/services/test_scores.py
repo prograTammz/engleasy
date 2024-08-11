@@ -5,7 +5,6 @@ from app.models.score import EnglishScoreSheet
 from bson import ObjectId
 from datetime import datetime, timezone
 
-# Tell pytest to treat this file as asyncio-compatible
 pytestmark = pytest.mark.asyncio
 
 @pytest.fixture
@@ -47,28 +46,43 @@ def score_sheet():
 
 @patch("app.services.scores.scores_collection.insert_one", new_callable=AsyncMock)
 async def test_save_score(mock_insert_one, score_sheet):
-    mock_insert_one.return_value.inserted_id = ObjectId()
+    # Simulate a successful insert operation
+    mock_insert_one.return_value.acknowledged = True
 
     result = await save_score(score_sheet)
 
-    assert isinstance(result, str)
-    assert ObjectId.is_valid(result)
+    assert result is True  # Ensure it returns True for a successful save
 
-@patch("app.services.scores.scores_collection.find", new_callable=AsyncMock)
+    # Simulate a failed insert operation
+    mock_insert_one.return_value.acknowledged = False
+
+    result = await save_score(score_sheet)
+
+    assert result is False  # Ensure it returns False for a failed save
+
+@patch("app.services.scores.scores_collection.find")
 async def test_get_all_scores(mock_find, score_sheet):
-    mock_find.return_value.to_list.return_value = [score_sheet.model_dump()]
+    # Create an async mock for the cursor
+    mock_cursor = AsyncMock()
+    mock_cursor.__aiter__.return_value = [score_sheet.model_dump()]
+    mock_find.return_value = mock_cursor
+
     result = await get_all_scores("test_user_id")
 
     assert isinstance(result, list)
     assert len(result) == 1
-    assert result[0]['overall_score'] == 160  # Ensure it has the expected score
+    assert isinstance(result[0], EnglishScoreSheet)
+    assert result[0].overall_score == 160
+
 
 @patch("app.services.scores.scores_collection.find_one", new_callable=AsyncMock)
 async def test_get_score_by_id(mock_find_one, score_sheet):
     mock_find_one.return_value = score_sheet.model_dump()
-    result = await get_score_by_id(str(ObjectId()))
+
+    result = await get_score_by_id(score_sheet.id)
 
     assert result is not None
+    assert isinstance(result, EnglishScoreSheet)  # Ensure the result is an instance of EnglishScoreSheet
     assert result.overall_score == 160
 
 @patch("app.services.scores.scores_collection.delete_one", new_callable=AsyncMock)
