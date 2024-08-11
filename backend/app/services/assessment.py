@@ -2,8 +2,8 @@ import json
 from datetime import datetime,timezone
 
 from app.services.openai import create_gpt_completion
-from app.models.score import (EnglishScoreSheet, WritingScores, SpeakingScores, ReadingScores, ListeningScores)
-from app.models.assessment import (Question, Questionnaire)
+from app.models.score import EnglishScoreSheet
+from app.models.assessment import Question, Questionnaire
 
 # ----------------------------
 # Questionnaire Definitions
@@ -94,8 +94,6 @@ async def generate_score_sheet(questionnaire: Questionnaire, user_id:str ) -> En
 
     Return the scores in the following JSON format:
     {
-        "user_id": "user-id",
-        "test_date": "ISO-8601-date",
         "writing": {
             "task_achievement": score,
             "coherence_and_cohesion": score,
@@ -136,41 +134,5 @@ async def generate_score_sheet(questionnaire: Questionnaire, user_id:str ) -> En
 
     score_data = json.loads(response)
 
-    return get_score_sheet_object(score_data, user_id)
-
-# Takes the score sheet json after it gets generated and parsed from chatGPT with user_id
-def get_score_sheet_object(score_sheet_json: dict, user_id: str) -> EnglishScoreSheet:
-    return EnglishScoreSheet(
-        user_id=user_id,  # Replace with actual user ID
-        test_date=str(datetime.now(timezone.utc)),
-        writing=WritingScores(
-            task_achievement=score_sheet_json['writing']['task_achievement'],
-            coherence_and_cohesion=score_sheet_json['writing']['coherence_and_cohesion'],
-            lexical_resource=score_sheet_json['writing']['lexical_resource'],
-            grammatical_range_and_accuracy=score_sheet_json['writing']['grammatical_range_and_accuracy'],
-            total=score_sheet_json['writing']['total']
-        ),
-        speaking=SpeakingScores(
-            fluency_and_coherence=score_sheet_json['speaking']['fluency_and_coherence'],
-            pronunciation=score_sheet_json['speaking']['pronunciation'],
-            lexical_resource=score_sheet_json['speaking']['lexical_resource'],
-            grammatical_range_and_accuracy=score_sheet_json['speaking']['grammatical_range_and_accuracy'],
-            total=score_sheet_json['speaking']['total']
-        ),
-        reading=ReadingScores(
-            understanding_main_ideas=score_sheet_json['reading']['understanding_main_ideas'],
-            understanding_details=score_sheet_json['reading']['understanding_details'],
-            inference=score_sheet_json['reading']['inference'],
-            lexical_resource=score_sheet_json['reading']['lexical_resource'],
-            total=score_sheet_json['reading']['total']
-        ),
-        listening=ListeningScores(
-            understanding_main_ideas=score_sheet_json['listening']['understanding_main_ideas'],
-            understanding_details=score_sheet_json['listening']['understanding_details'],
-            inference=score_sheet_json['listening']['inference'],
-            lexical_resource=score_sheet_json['listening']['lexical_resource'],
-            total=score_sheet_json['listening']['total']
-        ),
-        overall_score=score_sheet_json['overall_score'],
-        cefr_level=score_sheet_json['cefr_level']
-    )
+    score_data['user_id'] = user_id
+    return EnglishScoreSheet.model_validate(score_data)
